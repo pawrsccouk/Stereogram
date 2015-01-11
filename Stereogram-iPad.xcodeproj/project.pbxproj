@@ -13,6 +13,8 @@
 		57503BB71A62D3A000648FA1 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 57503BB61A62D3A000648FA1 /* Images.xcassets */; };
 		57503BBA1A62D3A000648FA1 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57503BB81A62D3A000648FA1 /* LaunchScreen.xib */; };
 		57503BC61A62D3A000648FA1 /* Stereogram_iPadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BC51A62D3A000648FA1 /* Stereogram_iPadTests.swift */; };
+		57503BD01A62D42E00648FA1 /* PhotoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BCF1A62D42E00648FA1 /* PhotoStore.swift */; };
+		57503BD21A62D48700648FA1 /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BD11A62D48700648FA1 /* Result.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +38,8 @@
 		57503BBF1A62D3A000648FA1 /* Stereogram-iPadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Stereogram-iPadTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		57503BC41A62D3A000648FA1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		57503BC51A62D3A000648FA1 /* Stereogram_iPadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stereogram_iPadTests.swift; sourceTree = "<group>"; };
+		57503BCF1A62D42E00648FA1 /* PhotoStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoStore.swift; sourceTree = "<group>"; };
+		57503BD11A62D48700648FA1 /* Result.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Result.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,12 +81,14 @@
 		57503BAC1A62D3A000648FA1 /* Stereogram-iPad */ = {
 			isa = PBXGroup;
 			children = (
+				57503BD11A62D48700648FA1 /* Result.swift */,
 				57503BAF1A62D3A000648FA1 /* AppDelegate.swift */,
 				57503BB11A62D3A000648FA1 /* ViewController.swift */,
 				57503BB31A62D3A000648FA1 /* Main.storyboard */,
 				57503BB61A62D3A000648FA1 /* Images.xcassets */,
 				57503BB81A62D3A000648FA1 /* LaunchScreen.xib */,
 				57503BAD1A62D3A000648FA1 /* Supporting Files */,
+				57503BCF1A62D42E00648FA1 /* PhotoStore.swift */,
 			);
 			path = "Stereogram-iPad";
 			sourceTree = "<group>";
@@ -213,6 +219,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				57503BB21A62D3A000648FA1 /* ViewController.swift in Sources */,
+				57503BD01A62D42E00648FA1 /* PhotoStore.swift in Sources */,
+				57503BD21A62D48700648FA1 /* Result.swift in Sources */,
 				57503BB01A62D3A000648FA1 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
