@@ -1,0 +1,422 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		57503BB01A62D3A000648FA1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BAF1A62D3A000648FA1 /* AppDelegate.swift */; };
+		57503BB21A62D3A000648FA1 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BB11A62D3A000648FA1 /* ViewController.swift */; };
+		57503BB51A62D3A000648FA1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 57503BB31A62D3A000648FA1 /* Main.storyboard */; };
+		57503BB71A62D3A000648FA1 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 57503BB61A62D3A000648FA1 /* Images.xcassets */; };
+		57503BBA1A62D3A000648FA1 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57503BB81A62D3A000648FA1 /* LaunchScreen.xib */; };
+		57503BC61A62D3A000648FA1 /* Stereogram_iPadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BC51A62D3A000648FA1 /* Stereogram_iPadTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		57503BC01A62D3A000648FA1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 57503BA21A62D3A000648FA1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 57503BA91A62D3A000648FA1;
+			remoteInfo = "Stereogram-iPad";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		57503BAA1A62D3A000648FA1 /* Stereogram-iPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Stereogram-iPad.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		57503BAE1A62D3A000648FA1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		57503BAF1A62D3A000648FA1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		57503BB11A62D3A000648FA1 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		57503BB41A62D3A000648FA1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		57503BB61A62D3A000648FA1 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		57503BB91A62D3A000648FA1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		57503BBF1A62D3A000648FA1 /* Stereogram-iPadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Stereogram-iPadTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		57503BC41A62D3A000648FA1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		57503BC51A62D3A000648FA1 /* Stereogram_iPadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stereogram_iPadTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		57503BA71A62D3A000648FA1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		57503BBC1A62D3A000648FA1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		57503BA11A62D3A000648FA1 = {
+			isa = PBXGroup;
+			children = (
+				57503BAC1A62D3A000648FA1 /* Stereogram-iPad */,
+				57503BC21A62D3A000648FA1 /* Stereogram-iPadTests */,
+				57503BAB1A62D3A000648FA1 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		57503BAB1A62D3A000648FA1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				57503BAA1A62D3A000648FA1 /* Stereogram-iPad.app */,
+				57503BBF1A62D3A000648FA1 /* Stereogram-iPadTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		57503BAC1A62D3A000648FA1 /* Stereogram-iPad */ = {
+			isa = PBXGroup;
+			children = (
+				57503BAF1A62D3A000648FA1 /* AppDelegate.swift */,
+				57503BB11A62D3A000648FA1 /* ViewController.swift */,
+				57503BB31A62D3A000648FA1 /* Main.storyboard */,
+				57503BB61A62D3A000648FA1 /* Images.xcassets */,
+				57503BB81A62D3A000648FA1 /* LaunchScreen.xib */,
+				57503BAD1A62D3A000648FA1 /* Supporting Files */,
+			);
+			path = "Stereogram-iPad";
+			sourceTree = "<group>";
+		};
+		57503BAD1A62D3A000648FA1 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				57503BAE1A62D3A000648FA1 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		57503BC21A62D3A000648FA1 /* Stereogram-iPadTests */ = {
+			isa = PBXGroup;
+			children = (
+				57503BC51A62D3A000648FA1 /* Stereogram_iPadTests.swift */,
+				57503BC31A62D3A000648FA1 /* Supporting Files */,
+			);
+			path = "Stereogram-iPadTests";
+			sourceTree = "<group>";
+		};
+		57503BC31A62D3A000648FA1 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				57503BC41A62D3A000648FA1 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		57503BA91A62D3A000648FA1 /* Stereogram-iPad */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 57503BC91A62D3A000648FA1 /* Build configuration list for PBXNativeTarget "Stereogram-iPad" */;
+			buildPhases = (
+				57503BA61A62D3A000648FA1 /* Sources */,
+				57503BA71A62D3A000648FA1 /* Frameworks */,
+				57503BA81A62D3A000648FA1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Stereogram-iPad";
+			productName = "Stereogram-iPad";
+			productReference = 57503BAA1A62D3A000648FA1 /* Stereogram-iPad.app */;
+			productType = "com.apple.product-type.application";
+		};
+		57503BBE1A62D3A000648FA1 /* Stereogram-iPadTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 57503BCC1A62D3A000648FA1 /* Build configuration list for PBXNativeTarget "Stereogram-iPadTests" */;
+			buildPhases = (
+				57503BBB1A62D3A000648FA1 /* Sources */,
+				57503BBC1A62D3A000648FA1 /* Frameworks */,
+				57503BBD1A62D3A000648FA1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				57503BC11A62D3A000648FA1 /* PBXTargetDependency */,
+			);
+			name = "Stereogram-iPadTests";
+			productName = "Stereogram-iPadTests";
+			productReference = 57503BBF1A62D3A000648FA1 /* Stereogram-iPadTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		57503BA21A62D3A000648FA1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0610;
+				ORGANIZATIONNAME = "Patrick Wallace";
+				TargetAttributes = {
+					57503BA91A62D3A000648FA1 = {
+						CreatedOnToolsVersion = 6.1.1;
+					};
+					57503BBE1A62D3A000648FA1 = {
+						CreatedOnToolsVersion = 6.1.1;
+						TestTargetID = 57503BA91A62D3A000648FA1;
+					};
+				};
+			};
+			buildConfigurationList = 57503BA51A62D3A000648FA1 /* Build configuration list for PBXProject "Stereogram-iPad" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 57503BA11A62D3A000648FA1;
+			productRefGroup = 57503BAB1A62D3A000648FA1 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				57503BA91A62D3A000648FA1 /* Stereogram-iPad */,
+				57503BBE1A62D3A000648FA1 /* Stereogram-iPadTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		57503BA81A62D3A000648FA1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				57503BB51A62D3A000648FA1 /* Main.storyboard in Resources */,
+				57503BBA1A62D3A000648FA1 /* LaunchScreen.xib in Resources */,
+				57503BB71A62D3A000648FA1 /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		57503BBD1A62D3A000648FA1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		57503BA61A62D3A000648FA1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				57503BB21A62D3A000648FA1 /* ViewController.swift in Sources */,
+				57503BB01A62D3A000648FA1 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		57503BBB1A62D3A000648FA1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				57503BC61A62D3A000648FA1 /* Stereogram_iPadTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		57503BC11A62D3A000648FA1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 57503BA91A62D3A000648FA1 /* Stereogram-iPad */;
+			targetProxy = 57503BC01A62D3A000648FA1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		57503BB31A62D3A000648FA1 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				57503BB41A62D3A000648FA1 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		57503BB81A62D3A000648FA1 /* LaunchScreen.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				57503BB91A62D3A000648FA1 /* Base */,
+			);
+			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		57503BC71A62D3A000648FA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Debug;
+		};
+		57503BC81A62D3A000648FA1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		57503BCA1A62D3A000648FA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = "Stereogram-iPad/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		57503BCB1A62D3A000648FA1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = "Stereogram-iPad/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		57503BCD1A62D3A000648FA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "Stereogram-iPadTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Stereogram-iPad.app/Stereogram-iPad";
+			};
+			name = Debug;
+		};
+		57503BCE1A62D3A000648FA1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "Stereogram-iPadTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Stereogram-iPad.app/Stereogram-iPad";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		57503BA51A62D3A000648FA1 /* Build configuration list for PBXProject "Stereogram-iPad" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				57503BC71A62D3A000648FA1 /* Debug */,
+				57503BC81A62D3A000648FA1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		57503BC91A62D3A000648FA1 /* Build configuration list for PBXNativeTarget "Stereogram-iPad" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				57503BCA1A62D3A000648FA1 /* Debug */,
+				57503BCB1A62D3A000648FA1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		57503BCC1A62D3A000648FA1 /* Build configuration list for PBXNativeTarget "Stereogram-iPadTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				57503BCD1A62D3A000648FA1 /* Debug */,
+				57503BCE1A62D3A000648FA1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 57503BA21A62D3A000648FA1 /* Project object */;
+}
