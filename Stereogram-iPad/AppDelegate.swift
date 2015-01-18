@@ -16,7 +16,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
-        return true
+        
+        window = UIWindow(frame: UIScreen.mainScreen().bounds)
+        
+        if let w = window {
+            let photoViewController = PhotoViewController()
+            let navigationController = UINavigationController(rootViewController: photoViewController)
+            w.rootViewController = navigationController
+            
+            w.backgroundColor = UIColor.whiteColor()
+            w.makeKeyAndVisible()
+        }
+        return window != nil
     }
 
     func applicationWillResignActive(application: UIApplication) {
@@ -27,6 +38,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+        var bgTask = UIBackgroundTaskInvalid
+        bgTask = application.beginBackgroundTaskWithExpirationHandler {
+            // This handler is called if time runs out for the background task.
+            NSLog("Background task terminated early.")
+            application.endBackgroundTask(bgTask)
+            bgTask = UIBackgroundTaskInvalid
+        }
+        
+        // We have now created a task object with a handler to terminate it. Now create the task and run it in another thread.
+        if bgTask != UIBackgroundTaskInvalid {
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+                PhotoStore.sharedStore().saveProperties().onError() { error in
+                    // Can't send a message to the user here. Should I store this for when the app is restarted next time?
+                    NSLog("Error saving the image property list. Error \(error), userInfo \(error.userInfo)")
+                }
+                application.endBackgroundTask(bgTask)
+                bgTask = UIBackgroundTaskInvalid
+            }
+        }
     }
 
     func applicationWillEnterForeground(application: UIApplication) {

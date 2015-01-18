@@ -17,10 +17,17 @@ public class FailableValueWrapper<T> {
 }
 
 // Return status from a function. Returns Success() if OK, Error(NSError) if not.
-enum Result {
+public enum Result {
     case Success()
-    case Error(NSError?)  // Error can be nil, in which case just output "unknown error".
+    case Error(NSError)  // If the error is nil, we will substitute a default NSError object.
 
+    // True if the result was a success, false if it failed.
+    var success: Bool {
+        switch self {
+        case .Success: return true
+        case .Error: return false
+        }
+    }
 
     // Performs the function fn on this object, if it has a valid value.
     // If not, just propagates the error.
@@ -38,13 +45,24 @@ enum Result {
         case .Error(let e): return .Error(e)
         }
     }
+    
+    // If an error was found, run the given handler, passing the error in.
+    // Useful when we only want to handle errors, but no need to handle the success case.
+    func onError(handler: (NSError) -> Void ) {
+        switch self {
+        case .Error(var error):
+            handler(error)
+        case .Success():
+            break
+        }
+    }
 }
 
 
 // Return value from functions. Returns Success(value) if OK, Error(NSError) if not.
-enum ResultOf<T> {
+public enum ResultOf<T> {
     case Success(FailableValueWrapper<T>)
-    case Error(NSError?)  // Error can be nil, in which case just output "unknown error".
+    case Error(NSError)  // We will substitute a default error if the one provided is nil.
     
     // Initialise with the value directly, to hide the use of the wrapper.
     init(_ value: T) {
@@ -73,7 +91,15 @@ enum ResultOf<T> {
         }
     }
 
-    
+    // Boolean result: If successful it returns .Success(), 
+    // if it failed, return the error code. 
+    // Useful if we care that it succeeded, but don't need the returned value.
+    public var result: Result {
+        switch self {
+        case .Success(_): return .Success()
+        case .Error(let e): return .Error(e)
+        }
+    }
 }
 
 
@@ -82,7 +108,7 @@ enum ResultOf<T> {
 // Takes a collection of objects and a function to call on each one of them.
 // Returns success only if all the function calls returned success.
 // If any of them returns Error, then return immediately with that error.
-func eachOf<T: SequenceType>(seq: T, fnc: (Int, T.Generator.Element) -> Result) -> Result {
+public func eachOf<T: SequenceType>(seq: T, fnc: (Int, T.Generator.Element) -> Result) -> Result {
     for (i, s) in enumerate(seq) {
         switch fnc(i, s) {
         case .Error(let e): return .Error(e)
@@ -92,5 +118,28 @@ func eachOf<T: SequenceType>(seq: T, fnc: (Int, T.Generator.Element) -> Result) 
     return .Success() // Only return success if all of the f(s) performed successfully.
 }
 
+// Wrap any function that doesn't return anything, so it returns Success().
+public func alwaysOk<T>(fnc: (t: T) -> Void) -> ((t: T) -> Result) {
+    return { fnc(t: $0)
+        return .Success()
+    }
+}
 
-
+// Given two functions that both return ResultOf<T>, if both are successful, return the results as a tuple.
+// If either fails, then return the error.
+public func and<T>(f1: (T) -> ResultOf<T>, f2: (T) -> ResultOf<T>) -> ((T, T) -> ResultOf<(T,T)>) {
+    typealias TupleT = (T, T)
+    return { t1, t2 in
+        switch f1(t1) {
+        case .Success(let a1):
+            switch f2(t2) {
+            case .Success(let a2):
+                let tuple = (a1.value, a2.value)
+                let wrapper = FailableValueWrapper<TupleT>(tuple)
+                return .Success(wrapper)
+            case .Error(let e): return .Error(e)
+            }
+        case .Error(let e): return .Error(e)
+        }
+    }
+}
