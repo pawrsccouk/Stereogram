@@ -73,6 +73,14 @@ public enum ResultOf<T> {
         self = .Error(error)
     }
     
+    // True if the result was a success, false if it failed.
+    var success: Bool {
+        switch self {
+        case .Success: return true
+        case .Error: return false
+        }
+    }
+ 
 
     // Performs the function fn on this object, if it has a valid value.
     // If not, just propagates the error.

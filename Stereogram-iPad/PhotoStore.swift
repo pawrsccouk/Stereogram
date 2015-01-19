@@ -252,8 +252,8 @@ public class PhotoStore {
         let folders = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
         let photoDir = folders[0].stringByAppendingPathComponent("Pictures") as String
         
-        var isDirectory = UnsafeMutablePointer<ObjCBool>()
-        isDirectory.memory = false
+        var isDirectory = UnsafeMutablePointer<ObjCBool>.alloc(1)
+        isDirectory.initialize(ObjCBool(false))
         let fileExists = fileManager.fileExistsAtPath(photoDir, isDirectory: isDirectory)
         if fileExists && isDirectory.memory {
             return ResultOf(photoDir)
