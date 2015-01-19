@@ -19,13 +19,12 @@
 		57503BD91A630DF100648FA1 /* UIImage+RoundedCorner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BD81A630DF100648FA1 /* UIImage+RoundedCorner.swift */; };
 		57A1E6761A67C20A00B97F60 /* CameraOverlayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E6751A67C20A00B97F60 /* CameraOverlayViewController.swift */; };
 		57A1E6781A67C2D500B97F60 /* ImageThumbnailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E6771A67C2D500B97F60 /* ImageThumbnailCell.swift */; };
-		57A1E67A1A69BD0C00B97F60 /* CallbackActionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E6791A69BD0C00B97F60 /* CallbackActionSheet.swift */; };
 		57A1E67C1A69C84800B97F60 /* NSError+Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E67B1A69C84800B97F60 /* NSError+Alert.swift */; };
 		57A1E67E1A69CA1500B97F60 /* FullImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E67D1A69CA1500B97F60 /* FullImageViewController.swift */; };
-		57A1E6801A6A0E5100B97F60 /* CallbackAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E67F1A6A0E5100B97F60 /* CallbackAlertView.swift */; };
 		57A1E6851A6C7F8200B97F60 /* CameraOverlayView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57A1E6821A6C7F8200B97F60 /* CameraOverlayView.xib */; };
 		57A1E6861A6C7F8200B97F60 /* FullImageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57A1E6831A6C7F8200B97F60 /* FullImageView.xib */; };
 		57A1E6871A6C7F8200B97F60 /* PhotoView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57A1E6841A6C7F8200B97F60 /* PhotoView.xib */; };
+		57A1E68A1A6D1EDE00B97F60 /* Set.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E6891A6D1EDE00B97F60 /* Set.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,13 +54,12 @@
 		57503BD81A630DF100648FA1 /* UIImage+RoundedCorner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+RoundedCorner.swift"; sourceTree = "<group>"; };
 		57A1E6751A67C20A00B97F60 /* CameraOverlayViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraOverlayViewController.swift; sourceTree = "<group>"; };
 		57A1E6771A67C2D500B97F60 /* ImageThumbnailCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageThumbnailCell.swift; sourceTree = "<group>"; };
-		57A1E6791A69BD0C00B97F60 /* CallbackActionSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CallbackActionSheet.swift; sourceTree = "<group>"; };
 		57A1E67B1A69C84800B97F60 /* NSError+Alert.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSError+Alert.swift"; sourceTree = "<group>"; };
 		57A1E67D1A69CA1500B97F60 /* FullImageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FullImageViewController.swift; sourceTree = "<group>"; };
-		57A1E67F1A6A0E5100B97F60 /* CallbackAlertView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CallbackAlertView.swift; sourceTree = "<group>"; };
 		57A1E6821A6C7F8200B97F60 /* CameraOverlayView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CameraOverlayView.xib; sourceTree = "<group>"; };
 		57A1E6831A6C7F8200B97F60 /* FullImageView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FullImageView.xib; sourceTree = "<group>"; };
 		57A1E6841A6C7F8200B97F60 /* PhotoView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PhotoView.xib; sourceTree = "<group>"; };
+		57A1E6891A6D1EDE00B97F60 /* Set.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Set.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,8 +108,6 @@
 				57503BD11A62D48700648FA1 /* Result.swift */,
 				57503BAF1A62D3A000648FA1 /* AppDelegate.swift */,
 				57A1E67B1A69C84800B97F60 /* NSError+Alert.swift */,
-				57A1E6791A69BD0C00B97F60 /* CallbackActionSheet.swift */,
-				57A1E67F1A6A0E5100B97F60 /* CallbackAlertView.swift */,
 				57503BB61A62D3A000648FA1 /* Images.xcassets */,
 				57503BB81A62D3A000648FA1 /* LaunchScreen.xib */,
 				57503BAD1A62D3A000648FA1 /* Supporting Files */,
@@ -147,6 +143,7 @@
 		57503BD31A62EA9300648FA1 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				57A1E6891A6D1EDE00B97F60 /* Set.swift */,
 				57503BCF1A62D42E00648FA1 /* PhotoStore.swift */,
 			);
 			name = Model;
@@ -293,10 +290,9 @@
 				57A1E67E1A69CA1500B97F60 /* FullImageViewController.swift in Sources */,
 				57503BD51A62EACD00648FA1 /* UIImage+Resize.swift in Sources */,
 				57503BB01A62D3A000648FA1 /* AppDelegate.swift in Sources */,
+				57A1E68A1A6D1EDE00B97F60 /* Set.swift in Sources */,
 				57A1E6781A67C2D500B97F60 /* ImageThumbnailCell.swift in Sources */,
-				57A1E6801A6A0E5100B97F60 /* CallbackAlertView.swift in Sources */,
 				57A1E67C1A69C84800B97F60 /* NSError+Alert.swift in Sources */,
-				57A1E67A1A69BD0C00B97F60 /* CallbackActionSheet.swift in Sources */,
 				57503BD71A63001D00648FA1 /* UIImage+Alpha.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

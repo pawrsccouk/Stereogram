@@ -130,7 +130,7 @@ public class PhotoStore {
         return addThumbnailToCache(key: filePath)(image: newImage).result
      }
 
-    // MARK: - Image manipulation
+    // MARK: Image manipulation
     
     // Copies the image at position <index> into the camera roll.
     func copyImageToCameraRoll(index: UInt) -> Result {
@@ -162,8 +162,8 @@ public class PhotoStore {
     // Toggles the viewing method from crosseye to walleye and back for the image at position <index>.
     func changeViewingMethod(index: UInt) -> Result {
         
-        func swapImageHalves(img: UIImage) -> ResultOf<UIImage> {
-            return and( { self.getHalfOfImage($0, whichHalf: .LeftHalf) }, { self.getHalfOfImage($0, whichHalf: .RightHalf) } )(img, img)
+        let swapImageHalves = { (img: UIImage) -> ResultOf<UIImage> in
+            return and( self.getHalfOfImage(img, whichHalf: .LeftHalf), self.getHalfOfImage(img, whichHalf: .RightHalf) )
             .map( { (leftImage,rightImage) in return self.makeStereogramWithLeftPhoto(rightImage, rightPhoto: leftImage) } )
         }
         
@@ -201,6 +201,30 @@ public class PhotoStore {
         return .Error(NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntLoadImageProperties.rawValue, userInfo: userInfo))
     }
 
+    func loadProperties() -> Result {
+        // Load the image properties and then compare them to the actual images, adding or removing entries until they match.
+        return and(loadImageProperties(propertiesFilePath), loadImageFilenames(photoFolderPath)).map0 { (tuple) -> Result in
+            var (allProperties, filesystemFilenames) = tuple
+            let allFilenames: [FileName] = allProperties.keys.array
+            let propertyFilenames = Set<FileName>(array: allFilenames)
+            
+            // Remove entries in propertyFilenames which are not in the file system.
+            let filesToRemove = propertyFilenames.filter {  !filesystemFilenames.contains($0) }
+            for file in filesToRemove {
+                allProperties[file] = nil
+            }
+            
+            // Add any entries in the filesystem which are not in the property list.
+            let filesToAdd = filesystemFilenames.filter { !propertyFilenames.contains($0) }
+            for file in filesToAdd {
+                allProperties[file] = PropertyDict()
+            }
+            
+            self.imageProperties = allProperties
+            return .Success()
+        }
+    }
+    
     // MARK: - Private Data
     
     // Dictionary of properties for each image.
@@ -325,4 +349,59 @@ public class PhotoStore {
             return ResultOf(thumbnail)
         }
     }
+    
+    private func loadImageProperties(path: String) -> ResultOf<[FileName : PropertyDict]> {
+        let nsDictionary = NSDictionary(contentsOfFile: path)
+        // If we have a dictionary, check the version is valid.
+        let INVALID_VERSION = -1.0
+        var version = INVALID_VERSION
+        if let dict = nsDictionary {
+            if let propDict = dict[MasterPropertyKey.Version.rawValue] as? NSDictionary {
+                if let versionObject = propDict[PropertyKey.Version.rawValue] as? NSNumber {
+                    version = versionObject.doubleValue
+                }
+            }
+            assert(version == 1.0, "Invalid data version \(version)")
+            
+            // Copy the NSDictionary contents into a [FileName : PropertyDict] dictionary.
+            // TODO: Implement proper load/save routines for the dictionary.
+            // This is a hack.  Load as an NSDictionary, then copy the values across.
+            var result = [FileName : PropertyDict]()
+            for (key, subDict) in dict {
+                var subResult = PropertyDict()
+                for (subKey, subValue) in (subDict as NSDictionary) {
+                    if let propertyKey = PropertyKey(rawValue: subKey as String) {
+                        subResult[propertyKey] = subValue
+                    } else {
+                        let errorMessage = "The string [\(subKey)] is not a valid property list key"
+                        return .Error(NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntLoadImageProperties.rawValue, userInfo: [NSLocalizedDescriptionKey : errorMessage]))
+                    }
+                }
+                result[key as FileName] = subResult
+            }
+            return ResultOf(result)
+        }
+        return ResultOf([FileName : PropertyDict]())
+    }
+    
+    
+    // Return all the filenames in the image directory.
+    private typealias FilenameSet = Set<FileName>
+    private func loadImageFilenames(folderPath: String) -> ResultOf<FilenameSet> {
+        var error: NSError?
+        if let fileNames = fileManager.contentsOfDirectoryAtPath(folderPath, error: &error) as? [String] {
+            let fullNames = fileNames.map { self.photoFolderPath.stringByAppendingPathComponent($0) }
+            return ResultOf(FilenameSet(array: fullNames))
+        } else {
+            if error == nil {
+                let userInfo = [NSLocalizedDescriptionKey : "Unknown error reading directory [\(folderPath)]"]
+                error = NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntLoadImageProperties.rawValue, userInfo: userInfo)
+            }
+            return .Error(error!)
+        }
+    }
+    
+
+    
+    
 }

@@ -28,9 +28,20 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
     }
 
     
+    // Do any additional setup after loading the view, typically from a nib.
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        
+        // Load the properties (images etc.)
+        // HACK: This assumes the PhotoViewController is the first thing to access the photoStore.
+        // If it isn't, then whatever is will get the wrong values until the data is loaded.
+        // the problem is that I want to display errors in this case, and I can't do that until we have a view to display them on.
+        if photoStore.count == 0 {
+            photoStore.loadProperties().onError { (error: NSError) in
+                error.showAlertWithTitle("Initialisation Error")
+            }
+        }
+        
         setupNavigationButtons()
 
         photoCollection.registerClass(ImageThumbnailCell.self, forCellWithReuseIdentifier: ImageThumbnailCellId)
@@ -86,14 +97,13 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
     }
     
     func actionMenu() {
-        let galleryButtonText = "Copy to photo gallery", deleteButtonText = "Delete", methodButtonText = "Change viewing method", cancelButtonText = "Cancel"
-        let titlesAndActions: [String : CallbackActionSheet.ActionCallback] = [  // TODO: Add the blocks once we have the methods to call in them.
-            cancelButtonText : {},
-            deleteButtonText : { self.deletePhotos(self.photoCollection) },
-            methodButtonText : { self.changeViewingMethod() },
-            galleryButtonText : { self.copyPhotosToCameraRoll(self.photoCollection) }]
-        actionSheet = CallbackActionSheet(title: "Action", buttonTitlesAndBlocks: titlesAndActions, cancelButtonTitle: cancelButtonText, destructiveButtonTitle: deleteButtonText)
-        actionSheet.showFromBarButtonItem(exportItem, animated: true)
+        let alertController = UIAlertController(title: "Select an action", message: "", preferredStyle: UIAlertControllerStyle.ActionSheet)
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
+        alertController.addAction(UIAlertAction(title: "Delete", style: .Destructive, handler: { (action) in self.deletePhotos(self.photoCollection) } ))
+        alertController.addAction(UIAlertAction(title: "Change viewing method", style: .Default, handler: { (action) in self.changeViewingMethod() } ))
+        alertController.addAction(UIAlertAction(title: "Copy to gallery", style: .Default, handler: { (action) in self.copyPhotosToCameraRoll(self.photoCollection) }))
+        alertController.popoverPresentationController!.barButtonItem = exportItem
+        self.presentViewController(alertController, animated: true, completion: nil)
     }
     
     override func setEditing(editing: Bool, animated: Bool) {
@@ -137,16 +147,6 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
     
     // MARK: - Image Picker Delegate
     
-    private func makeStereogram(firstPhoto: UIImage, secondPhoto: UIImage) -> ResultOf<UIImage> {
-        return photoStore.makeStereogramWithLeftPhoto(firstPhoto, rightPhoto: secondPhoto).map { (stereogram) -> ResultOf<UIImage> in
-            let resizedStereogram = stereogram.resizedImage(CGSizeMake(stereogram.size.width / 2, stereogram.size.height / 2), interpolationQuality: kCGInterpolationHigh)
-            return ResultOf(resizedStereogram)
-        }
-    }
-    
-    // This is the first of the two images we store when taking the stereogram. 
-    // State-based -only relevant when in the process of taking a photo. TODO: Move to a state-machine instead of a boolean flag.
-    var firstPhoto: UIImage?
     
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [NSObject : AnyObject]) {
         assert(stereogram == nil, "Stereogram \(stereogram) must be nil.")
@@ -156,24 +156,36 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
             firstPhoto = imageFromPickerInfoDict(info)
             cameraOverlayController.helpText = "Take the second photo"
         } else {
+            let makeStereogram = { (firstPhoto: UIImage, secondPhoto: UIImage) -> ResultOf<UIImage> in
+                return self.photoStore.makeStereogramWithLeftPhoto(firstPhoto, rightPhoto: secondPhoto).map { (stereogram) -> ResultOf<UIImage> in
+                    let resizedStereogram = stereogram.resizedImage(CGSizeMake(stereogram.size.width / 2, stereogram.size.height / 2), interpolationQuality: kCGInterpolationHigh)
+                    return ResultOf(resizedStereogram)
+                }
+            }
             let secondPhoto = imageFromPickerInfoDict(info)
             if let first = firstPhoto {
-                cameraOverlayController.showWaitIcon = true
-                
-                // Make the stereogram on a separate thread to avoid blocking the UI thread.  The UI shows the wait indicator.
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () -> Void in
-                    switch self.makeStereogram(first, secondPhoto: secondPhoto) {
-                    case .Success(let image):
-                        // Once the stereogram is made, update the UI code back on the main thread.
-                        dispatch_async(dispatch_get_main_queue()) { () -> Void in
-                            self.stereogram = image.value
-                            self.firstPhoto = nil
-                            picker.dismissViewControllerAnimated(false, completion: nil)
-                            self.cameraOverlayController.showWaitIcon = false
+                if let second = secondPhoto {
+                    cameraOverlayController.showWaitIcon = true
+                    
+                    // Make the stereogram on a separate thread to avoid blocking the UI thread.  The UI shows the wait indicator.
+                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () -> Void in
+                        switch makeStereogram(first, second) {
+                        case .Success(let image):
+                            // Once the stereogram is made, update the UI code back on the main thread.
+                            dispatch_async(dispatch_get_main_queue()) { () -> Void in
+                                self.stereogram = image.value
+                                self.firstPhoto = nil
+                                picker.dismissViewControllerAnimated(false, completion: nil)
+                                self.cameraOverlayController.showWaitIcon = false
+                            }
+                        case .Error(let error):
+                            error.showAlertWithTitle("Error creating the stereogram image")
                         }
-                    case .Error(let error):
-                        error.showAlertWithTitle("Error creating the stereogram image")
                     }
+                }
+                else {  // Something went wrong. No second photo.
+                    picker.dismissViewControllerAnimated(false, completion: nil)
+                    fatalError("The media info \(info) had no picture information when taking a photo.")
                 }
             }
         }
@@ -232,9 +244,12 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
     private let cameraOverlayController: CameraOverlayViewController
     private var stereogram: UIImage?
     private var exportItem: UIBarButtonItem!, editItem: UIBarButtonItem!
-    private var actionSheet: CallbackActionSheet!   // Keep a reference to the action sheet, otherwise it could get de-allocated while it is still being presented.
     private let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .WhiteLarge)
+    // This is the first of the two images we store when taking the stereogram.
+    // State-based -only relevant when in the process of taking a photo. TODO: Move to a state-machine instead of a boolean flag.
+    private var firstPhoto: UIImage?
     
+
     // Creates the navigation buttons and adds them to the navigation controller. Called from the initializers as part of the setup process.
     private func setupNavigationButtons() {
         let takePhotoItem = UIBarButtonItem(barButtonSystemItem: .Camera, target: self, action: "takePicture")
@@ -246,9 +261,11 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
     }
     
     // Get the edited photo from the info dictionary if the user has edited it. If there is no edited photo, get the original photo.
-    private func imageFromPickerInfoDict(infoDict: [NSObject : AnyObject!]) -> UIImage {
-        if let photo = infoDict[UIImagePickerControllerEditedImage] as UIImage? { return photo }
-        return infoDict[UIImagePickerControllerOriginalImage] as UIImage
+    private func imageFromPickerInfoDict(infoDict: [NSObject : AnyObject]) -> UIImage? {
+        if let photo = infoDict[UIImagePickerControllerEditedImage] as UIImage? {
+            return photo
+        }
+        return infoDict[UIImagePickerControllerOriginalImage] as UIImage?
     }
     
     private func formatDeleteMessage(numToDelete: UInt) -> String {
@@ -261,7 +278,7 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
     // The block takes an integer, which is an index into the collection of image thumbnails in the order they appear
     // in the collection view.  The action must not invalidate the collection view indexes as it may be called more than once.
     typealias ActionBlock = (UInt) -> Result
-    func performNondestructiveAction(photoCollection: UICollectionView, action: ActionBlock, errorTitle: String) {
+    private func performNondestructiveAction(photoCollection: UICollectionView, action: ActionBlock, errorTitle: String) {
         for indexPath in photoCollection.indexPathsForSelectedItems() as [NSIndexPath] {
             let result = action(UInt(indexPath.indexAtPosition(1)))
 
@@ -275,7 +292,7 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
         }
     }
     
-    func copyPhotosToCameraRoll(photoCollection: UICollectionView) {
+    private func copyPhotosToCameraRoll(photoCollection: UICollectionView) {
         performNondestructiveAction(photoCollection, action: { (index) -> Result in
             return self.photoStore.copyImageToCameraRoll(index)
         }, errorTitle: "Error exporting to camera roll")
@@ -289,7 +306,7 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
         activityIndicator.frame = frame
     }
     
-    var showActivityIndicator: Bool {
+    private var showActivityIndicator: Bool {
         get { return !activityIndicator.hidden }
         set {
             // TODO: Check the activity indicator still works.
@@ -306,7 +323,7 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
     
     // Toggle from cross-eye to wall-eye and back for the selected items.
     // Create the new images on a separate thread, then call back to the main thread to replace them in the photo collection.
-    func changeViewingMethod() {
+    private func changeViewingMethod() {
         self.showActivityIndicator = true
         let selectedItems = photoCollection.indexPathsForSelectedItems() as [NSIndexPath]
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () in
@@ -334,16 +351,19 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
         }
     }
     
-    func deletePhotos(photoCollection: UICollectionView) {
+    private func deletePhotos(photoCollection: UICollectionView) {
         let indexPaths = photoCollection.indexPathsForSelectedItems() as [NSIndexPath]
         if indexPaths.count > 0 {
-            func doDelete() {
+            let message = formatDeleteMessage(UInt(indexPaths.count))
+            let alertController = UIAlertController(title: "Confirm deletion", message: message, preferredStyle: .Alert)
+            alertController.addAction(UIAlertAction(title: "Delete", style: UIAlertActionStyle.Destructive) { (action) in
+                NSLog("Deleting images at index paths: \(indexPaths)")
                 let result = self.photoStore.deleteImagesAtIndexPaths(indexPaths)
                 result.onError() { $0.showAlertWithTitle("Error deleting photos") }
-            }
-            let message = formatDeleteMessage(UInt(indexPaths.count))
-            let alertView = CallbackAlertView(title: "Confirm deletion", message: message, confirmButtonTitle: "Delete", confirmBlock: doDelete, cancelButtonTitle: "Cancel", cancelBlock: {})
-            alertView.show()
+                photoCollection.reloadData()
+            })
+            alertController.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil ))
+            self.presentViewController(alertController, animated: true, completion: nil)
         }
     }
     

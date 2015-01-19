@@ -133,21 +133,18 @@ public func alwaysOk<T>(fnc: (t: T) -> Void) -> ((t: T) -> Result) {
     }
 }
 
-// Given two functions that both return ResultOf<T>, if both are successful, return the results as a tuple.
-// If either fails, then return the error.
-public func and<T>(f1: (T) -> ResultOf<T>, f2: (T) -> ResultOf<T>) -> ((T, T) -> ResultOf<(T,T)>) {
-    typealias TupleT = (T, T)
-    return { t1, t2 in
-        switch f1(t1) {
-        case .Success(let a1):
-            switch f2(t2) {
-            case .Success(let a2):
-                let tuple = (a1.value, a2.value)
-                let wrapper = FailableValueWrapper<TupleT>(tuple)
-                return .Success(wrapper)
-            case .Error(let e): return .Error(e)
-            }
+// Given two values of type ResultOf<T>, if both are successful, return the results as a tuple. If either fails, then return the error.
+public func and<T,U>(r1: ResultOf<T>, r2: ResultOf<U>) -> ResultOf<(T,U)> {
+    typealias TupleT = (T, U)
+    switch r1 {
+    case .Success(let a1):
+        switch r2 {
+        case .Success(let a2):
+            let tuple = (a1.value, a2.value)
+            let wrapper = FailableValueWrapper<TupleT>(tuple)
+            return .Success(wrapper)
         case .Error(let e): return .Error(e)
         }
+    case .Error(let e): return .Error(e)
     }
 }

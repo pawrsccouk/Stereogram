@@ -18,7 +18,7 @@ class FullImageViewController: UIViewController, UIScrollViewDelegate {
     
     init(image: UIImage, forApproval: Bool) {
         self.image = image
-        super.init()
+        super.init(nibName: "FullImageView", bundle: nil)
         // If we are using this to approve an image, then display "Keep" and "Discard" buttons.
         if forApproval {
             let keepButtonItem = UIBarButtonItem(title: "Keep", style: .Bordered, target: self, action: "keepPhoto")
