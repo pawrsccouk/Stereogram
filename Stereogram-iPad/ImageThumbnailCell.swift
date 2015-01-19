@@ -10,9 +10,6 @@ import UIKit
 
 class ImageThumbnailCell: UICollectionViewCell {
 
-    required init(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -32,6 +29,11 @@ class ImageThumbnailCell: UICollectionViewCell {
         sv.image = unselectedImage
         contentView.addSubview(sv)
         selectionOverlayView = sv
+    }
+
+    // See if this is needed.
+    required init(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     weak var imageView: UIImageView!

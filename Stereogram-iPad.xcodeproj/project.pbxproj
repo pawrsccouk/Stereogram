@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		57503BB01A62D3A000648FA1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BAF1A62D3A000648FA1 /* AppDelegate.swift */; };
 		57503BB21A62D3A000648FA1 /* PhotoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BB11A62D3A000648FA1 /* PhotoViewController.swift */; };
-		57503BB51A62D3A000648FA1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 57503BB31A62D3A000648FA1 /* Main.storyboard */; };
 		57503BB71A62D3A000648FA1 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 57503BB61A62D3A000648FA1 /* Images.xcassets */; };
 		57503BBA1A62D3A000648FA1 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57503BB81A62D3A000648FA1 /* LaunchScreen.xib */; };
 		57503BC61A62D3A000648FA1 /* Stereogram_iPadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BC51A62D3A000648FA1 /* Stereogram_iPadTests.swift */; };
@@ -24,6 +23,9 @@
 		57A1E67C1A69C84800B97F60 /* NSError+Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E67B1A69C84800B97F60 /* NSError+Alert.swift */; };
 		57A1E67E1A69CA1500B97F60 /* FullImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E67D1A69CA1500B97F60 /* FullImageViewController.swift */; };
 		57A1E6801A6A0E5100B97F60 /* CallbackAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E67F1A6A0E5100B97F60 /* CallbackAlertView.swift */; };
+		57A1E6851A6C7F8200B97F60 /* CameraOverlayView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57A1E6821A6C7F8200B97F60 /* CameraOverlayView.xib */; };
+		57A1E6861A6C7F8200B97F60 /* FullImageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57A1E6831A6C7F8200B97F60 /* FullImageView.xib */; };
+		57A1E6871A6C7F8200B97F60 /* PhotoView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57A1E6841A6C7F8200B97F60 /* PhotoView.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,7 +43,6 @@
 		57503BAE1A62D3A000648FA1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		57503BAF1A62D3A000648FA1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		57503BB11A62D3A000648FA1 /* PhotoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoViewController.swift; sourceTree = "<group>"; };
-		57503BB41A62D3A000648FA1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		57503BB61A62D3A000648FA1 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		57503BB91A62D3A000648FA1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		57503BBF1A62D3A000648FA1 /* Stereogram-iPadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Stereogram-iPadTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -58,6 +59,9 @@
 		57A1E67B1A69C84800B97F60 /* NSError+Alert.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSError+Alert.swift"; sourceTree = "<group>"; };
 		57A1E67D1A69CA1500B97F60 /* FullImageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FullImageViewController.swift; sourceTree = "<group>"; };
 		57A1E67F1A6A0E5100B97F60 /* CallbackAlertView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CallbackAlertView.swift; sourceTree = "<group>"; };
+		57A1E6821A6C7F8200B97F60 /* CameraOverlayView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CameraOverlayView.xib; sourceTree = "<group>"; };
+		57A1E6831A6C7F8200B97F60 /* FullImageView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FullImageView.xib; sourceTree = "<group>"; };
+		57A1E6841A6C7F8200B97F60 /* PhotoView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PhotoView.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,18 +103,15 @@
 		57503BAC1A62D3A000648FA1 /* Stereogram-iPad */ = {
 			isa = PBXGroup;
 			children = (
-				57503BAF1A62D3A000648FA1 /* AppDelegate.swift */,
 				57503BDA1A63115B00648FA1 /* UIImage Extensions */,
 				57503BD31A62EA9300648FA1 /* Model */,
+				57A1E6811A6C7F0600B97F60 /* View */,
+				57A1E6881A6C8AA600B97F60 /* Controllers */,
 				57503BD11A62D48700648FA1 /* Result.swift */,
-				57503BB11A62D3A000648FA1 /* PhotoViewController.swift */,
+				57503BAF1A62D3A000648FA1 /* AppDelegate.swift */,
 				57A1E67B1A69C84800B97F60 /* NSError+Alert.swift */,
-				57A1E67D1A69CA1500B97F60 /* FullImageViewController.swift */,
-				57A1E6751A67C20A00B97F60 /* CameraOverlayViewController.swift */,
 				57A1E6791A69BD0C00B97F60 /* CallbackActionSheet.swift */,
-				57A1E6771A67C2D500B97F60 /* ImageThumbnailCell.swift */,
 				57A1E67F1A6A0E5100B97F60 /* CallbackAlertView.swift */,
-				57503BB31A62D3A000648FA1 /* Main.storyboard */,
 				57503BB61A62D3A000648FA1 /* Images.xcassets */,
 				57503BB81A62D3A000648FA1 /* LaunchScreen.xib */,
 				57503BAD1A62D3A000648FA1 /* Supporting Files */,
@@ -159,6 +160,27 @@
 				57503BD81A630DF100648FA1 /* UIImage+RoundedCorner.swift */,
 			);
 			name = "UIImage Extensions";
+			sourceTree = "<group>";
+		};
+		57A1E6811A6C7F0600B97F60 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				57A1E6821A6C7F8200B97F60 /* CameraOverlayView.xib */,
+				57A1E6831A6C7F8200B97F60 /* FullImageView.xib */,
+				57A1E6841A6C7F8200B97F60 /* PhotoView.xib */,
+				57A1E6771A67C2D500B97F60 /* ImageThumbnailCell.swift */,
+			);
+			name = View;
+			sourceTree = "<group>";
+		};
+		57A1E6881A6C8AA600B97F60 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				57503BB11A62D3A000648FA1 /* PhotoViewController.swift */,
+				57A1E67D1A69CA1500B97F60 /* FullImageViewController.swift */,
+				57A1E6751A67C20A00B97F60 /* CameraOverlayViewController.swift */,
+			);
+			name = Controllers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -241,8 +263,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				57503BB51A62D3A000648FA1 /* Main.storyboard in Resources */,
+				57A1E6861A6C7F8200B97F60 /* FullImageView.xib in Resources */,
+				57A1E6851A6C7F8200B97F60 /* CameraOverlayView.xib in Resources */,
 				57503BBA1A62D3A000648FA1 /* LaunchScreen.xib in Resources */,
+				57A1E6871A6C7F8200B97F60 /* PhotoView.xib in Resources */,
 				57503BB71A62D3A000648FA1 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -296,14 +320,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		57503BB31A62D3A000648FA1 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				57503BB41A62D3A000648FA1 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		57503BB81A62D3A000648FA1 /* LaunchScreen.xib */ = {
 			isa = PBXVariantGroup;
 			children = (

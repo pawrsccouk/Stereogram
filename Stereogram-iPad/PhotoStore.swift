@@ -177,10 +177,10 @@ public class PhotoStore {
     func saveProperties() -> Result {
         
         // Make a copy of the properties dict which does not include the thumbnails, converting the type from a Swift dict to an NSDictionary
-        var propertyArrayToSave = NSDictionary()
+        var propertyArrayToSave = NSMutableDictionary()
         for (filePath, imgPropertyDict)  in imageProperties {
             let origProperties = imageProperties[filePath]!
-            let newProperties = NSDictionary()
+            let newProperties = NSMutableDictionary()
             for (k,v) in origProperties {
                 if k != .Thumbnail {
                     newProperties.setValue(v, forKey: k.rawValue)
@@ -190,7 +190,7 @@ public class PhotoStore {
         }
         
         // Add a version number in case I change the format.
-        let masterProperties = NSDictionary(object: NSNumber(integer: 1), forKey: PropertyKey.Version.rawValue)
+        let masterProperties = NSMutableDictionary(object: NSNumber(integer: 1), forKey: PropertyKey.Version.rawValue)
         propertyArrayToSave.setValue(masterProperties, forKey: MasterPropertyKey.Version.rawValue)
         
         // Save the data, and return an error if it went wrong.

@@ -16,22 +16,23 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
     override init(nibName: String?, bundle: NSBundle?) {
         cameraOverlayController = CameraOverlayViewController()
         super.init(nibName: "PhotoView", bundle: bundle)
-        setupNavigationButtons()
     }
     
     convenience override init() {
         self.init(nibName: nil, bundle: nil)
     }
 
+    // View controllers are created manually for this project. This should never be called.
     required init(coder aDecoder: NSCoder) {
-        cameraOverlayController = CameraOverlayViewController()
-        super.init(coder: aDecoder)
-        setupNavigationButtons()
+        fatalError("init(coder:) has not been implemented")
     }
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        setupNavigationButtons()
+
         photoCollection.registerClass(ImageThumbnailCell.self, forCellWithReuseIdentifier: ImageThumbnailCellId)
         photoCollection.allowsSelection = true
         photoCollection.allowsMultipleSelection = true
@@ -41,6 +42,8 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
         let flowLayout = photoCollection.collectionViewLayout as UICollectionViewFlowLayout
         flowLayout.itemSize = CGSizeMake(CGFloat(photoStore.thumbnailSize), CGFloat(photoStore.thumbnailSize))
         flowLayout.invalidateLayout()
+        
+
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -64,7 +67,7 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
     
     func takePicture() {
         if !UIImagePickerController.isSourceTypeAvailable(.Camera) {
-            UIAlertView(title: "No camera", message: "This device does not have a camera attached", delegate: nil, cancelButtonTitle: "Close")
+            UIAlertView(title: "No camera", message: "This device does not have a camera attached", delegate: nil, cancelButtonTitle: "Close").show()
             return
         }
         
@@ -83,12 +86,12 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
     }
     
     func actionMenu() {
-        let photoGalleryButtonText = "Copy to photo gallery", deleteButtonText = "Delete", methodButtonText = "Change viewing method", cancelButtonText = "Cancel"
+        let galleryButtonText = "Copy to photo gallery", deleteButtonText = "Delete", methodButtonText = "Change viewing method", cancelButtonText = "Cancel"
         let titlesAndActions: [String : CallbackActionSheet.ActionCallback] = [  // TODO: Add the blocks once we have the methods to call in them.
             cancelButtonText : {},
-            deleteButtonText : {},
-            methodButtonText : {},
-            cancelButtonText : {}]
+            deleteButtonText : { self.deletePhotos(self.photoCollection) },
+            methodButtonText : { self.changeViewingMethod() },
+            galleryButtonText : { self.copyPhotosToCameraRoll(self.photoCollection) }]
         actionSheet = CallbackActionSheet(title: "Action", buttonTitlesAndBlocks: titlesAndActions, cancelButtonTitle: cancelButtonText, destructiveButtonTitle: deleteButtonText)
         actionSheet.showFromBarButtonItem(exportItem, animated: true)
     }
