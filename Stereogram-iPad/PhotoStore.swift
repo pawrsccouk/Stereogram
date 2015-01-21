@@ -34,22 +34,23 @@ public enum ViewMode {
 private var _singleInstance: PhotoStore!
 
 public class PhotoStore {
-
-    // Return the single instance of this class, which is shared between all the users.
-    // Note the class is not thread-safe.
-    public class func sharedStore() -> PhotoStore {
-        if _singleInstance == nil {
-            _singleInstance = PhotoStore()
-        }
-        return _singleInstance!
-    }
     
-    private init? () {
+    public init? (inout error: NSError?) {
         // Create the photo folder. Log an error if it fails and abort.
         switch photoFolder() {
-        case .Success(let p): photoFolderPath = p.value
+        case .Success(let p):
+            photoFolderPath = p.value
         case .Error(let e):
-            assert(false, "Error creating photo folder: \(e)")
+            NSLog("Error creating photo folder: \(e)")
+            error = e
+            return nil
+        }
+        
+        switch loadProperties() {
+        case .Success(let p):
+            imageProperties = p.value
+        case .Error(let e):
+            error = e
             return nil
         }
     }
@@ -179,9 +180,8 @@ public class PhotoStore {
         // Make a copy of the properties dict which does not include the thumbnails, converting the type from a Swift dict to an NSDictionary
         var propertyArrayToSave = NSMutableDictionary()
         for (filePath, imgPropertyDict)  in imageProperties {
-            let origProperties = imageProperties[filePath]!
             let newProperties = NSMutableDictionary()
-            for (k,v) in origProperties {
+            for (k,v) in imgPropertyDict {
                 if k != .Thumbnail {
                     newProperties.setValue(v, forKey: k.rawValue)
                 }
@@ -201,9 +201,9 @@ public class PhotoStore {
         return .Error(NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntLoadImageProperties.rawValue, userInfo: userInfo))
     }
 
-    func loadProperties() -> Result {
+    private func loadProperties() -> ResultOf<MasterPropertyDict> {
         // Load the image properties and then compare them to the actual images, adding or removing entries until they match.
-        return and(loadImageProperties(propertiesFilePath), loadImageFilenames(photoFolderPath)).map0 { (tuple) -> Result in
+        return and(loadImageProperties(propertiesFilePath), loadImageFilenames(photoFolderPath)).map { (tuple) -> ResultOf<MasterPropertyDict> in
             var (allProperties, filesystemFilenames) = tuple
             let allFilenames: [FileName] = allProperties.keys.array
             let propertyFilenames = Set<FileName>(array: allFilenames)
@@ -219,9 +219,7 @@ public class PhotoStore {
             for file in filesToAdd {
                 allProperties[file] = PropertyDict()
             }
-            
-            self.imageProperties = allProperties
-            return .Success()
+            return ResultOf(allProperties)
         }
     }
     
@@ -246,7 +244,8 @@ public class PhotoStore {
     
     private typealias FileName = String
     private enum MasterPropertyKey: FileName { case Version = "Version" }
-    private var imageProperties = [FileName : PropertyDict]()
+    private typealias MasterPropertyDict = [FileName : PropertyDict]
+    private var imageProperties = MasterPropertyDict()
     
     // A file manager object to use for loading and saving.
     private let fileManager = NSFileManager.defaultManager()
@@ -390,7 +389,7 @@ public class PhotoStore {
     private func loadImageFilenames(folderPath: String) -> ResultOf<FilenameSet> {
         var error: NSError?
         if let fileNames = fileManager.contentsOfDirectoryAtPath(folderPath, error: &error) as? [String] {
-            let fullNames = fileNames.map { self.photoFolderPath.stringByAppendingPathComponent($0) }
+            let fullNames = fileNames.map { folderPath.stringByAppendingPathComponent($0) }
             return ResultOf(FilenameSet(array: fullNames))
         } else {
             if error == nil {

@@ -12,7 +12,9 @@ import MobileCoreServices
 class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UICollectionViewDelegate, UICollectionViewDataSource {
 
     @IBOutlet weak var photoCollection: UICollectionView!
-    
+
+    var photoStore: PhotoStore!
+
     override init(nibName: String?, bundle: NSBundle?) {
         cameraOverlayController = CameraOverlayViewController()
         super.init(nibName: "PhotoView", bundle: bundle)
@@ -36,9 +38,14 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
         // HACK: This assumes the PhotoViewController is the first thing to access the photoStore.
         // If it isn't, then whatever is will get the wrong values until the data is loaded.
         // the problem is that I want to display errors in this case, and I can't do that until we have a view to display them on.
-        if photoStore.count == 0 {
-            photoStore.loadProperties().onError { (error: NSError) in
-                error.showAlertWithTitle("Initialisation Error")
+        if photoStore == nil {
+            var error: NSError?
+            photoStore = PhotoStore(error: &error)
+            if photoStore == nil {
+                if let e = error {
+                    e.showAlertWithTitle("Error initialising the photo store")
+                }
+                fatalError("Failed to initialise the photo store with error \(error)")
             }
         }
         
@@ -240,7 +247,6 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
     
     // MARK: - Private data
 
-    private let photoStore = PhotoStore.sharedStore()
     private let cameraOverlayController: CameraOverlayViewController
     private var stereogram: UIImage?
     private var exportItem: UIBarButtonItem!, editItem: UIBarButtonItem!
