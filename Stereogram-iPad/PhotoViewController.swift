@@ -58,10 +58,8 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
         // Set the thumbnail size from the store
         assert(photoCollection.collectionViewLayout.isKindOfClass(UICollectionViewFlowLayout.self), "Photo collection view layout is not a flow layout.")
         let flowLayout = photoCollection.collectionViewLayout as UICollectionViewFlowLayout
-        flowLayout.itemSize = CGSizeMake(CGFloat(photoStore.thumbnailSize), CGFloat(photoStore.thumbnailSize))
+        flowLayout.itemSize = thumbnailSize
         flowLayout.invalidateLayout()
-        
-
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -164,7 +162,7 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
             cameraOverlayController.helpText = "Take the second photo"
         } else {
             let makeStereogram = { (firstPhoto: UIImage, secondPhoto: UIImage) -> ResultOf<UIImage> in
-                return self.photoStore.makeStereogramWithLeftPhoto(firstPhoto, rightPhoto: secondPhoto).map { (stereogram) -> ResultOf<UIImage> in
+                return ImageManager.makeStereogramWithLeftPhoto(firstPhoto, rightPhoto: secondPhoto).map { (stereogram) -> ResultOf<UIImage> in
                     let resizedStereogram = stereogram.resizedImage(CGSizeMake(stereogram.size.width / 2, stereogram.size.height / 2), interpolationQuality: kCGInterpolationHigh)
                     return ResultOf(resizedStereogram)
                 }

@@ -25,6 +25,8 @@
 		57A1E6861A6C7F8200B97F60 /* FullImageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57A1E6831A6C7F8200B97F60 /* FullImageView.xib */; };
 		57A1E6871A6C7F8200B97F60 /* PhotoView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57A1E6841A6C7F8200B97F60 /* PhotoView.xib */; };
 		57A1E68A1A6D1EDE00B97F60 /* Set.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E6891A6D1EDE00B97F60 /* Set.swift */; };
+		57A1E68C1A6F3BCC00B97F60 /* ThumbnailCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E68B1A6F3BCC00B97F60 /* ThumbnailCache.swift */; };
+		57A1E68E1A6F3F8200B97F60 /* ImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E68D1A6F3F8200B97F60 /* ImageManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,6 +62,8 @@
 		57A1E6831A6C7F8200B97F60 /* FullImageView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FullImageView.xib; sourceTree = "<group>"; };
 		57A1E6841A6C7F8200B97F60 /* PhotoView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PhotoView.xib; sourceTree = "<group>"; };
 		57A1E6891A6D1EDE00B97F60 /* Set.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Set.swift; sourceTree = "<group>"; };
+		57A1E68B1A6F3BCC00B97F60 /* ThumbnailCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThumbnailCache.swift; sourceTree = "<group>"; };
+		57A1E68D1A6F3F8200B97F60 /* ImageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,6 +149,8 @@
 			children = (
 				57A1E6891A6D1EDE00B97F60 /* Set.swift */,
 				57503BCF1A62D42E00648FA1 /* PhotoStore.swift */,
+				57A1E68B1A6F3BCC00B97F60 /* ThumbnailCache.swift */,
+				57A1E68D1A6F3F8200B97F60 /* ImageManager.swift */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -282,6 +288,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				57A1E68C1A6F3BCC00B97F60 /* ThumbnailCache.swift in Sources */,
 				57503BB21A62D3A000648FA1 /* PhotoViewController.swift in Sources */,
 				57503BD01A62D42E00648FA1 /* PhotoStore.swift in Sources */,
 				57A1E6761A67C20A00B97F60 /* CameraOverlayViewController.swift in Sources */,
@@ -290,6 +297,7 @@
 				57A1E67E1A69CA1500B97F60 /* FullImageViewController.swift in Sources */,
 				57503BD51A62EACD00648FA1 /* UIImage+Resize.swift in Sources */,
 				57503BB01A62D3A000648FA1 /* AppDelegate.swift in Sources */,
+				57A1E68E1A6F3F8200B97F60 /* ImageManager.swift in Sources */,
 				57A1E68A1A6D1EDE00B97F60 /* Set.swift in Sources */,
 				57A1E6781A67C2D500B97F60 /* ImageThumbnailCell.swift in Sources */,
 				57A1E67C1A69C84800B97F60 /* NSError+Alert.swift in Sources */,

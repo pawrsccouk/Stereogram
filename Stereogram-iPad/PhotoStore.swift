@@ -55,10 +55,6 @@ public class PhotoStore {
         }
     }
     
-    
-    // Size of a thumbnail in pixels.  Thumbnails are square, so this is the width and the height of it.
-    let thumbnailSize = 100
-    
 
     // MARK: - Image Storage
     
@@ -66,6 +62,13 @@ public class PhotoStore {
     var count: Int {
         return imageProperties.count
     }
+    
+    // Array of the paths to the images.
+    private var imagePaths: [FileName] {
+        return sorted(imageProperties.keys)
+    }
+    
+    private var thumbnailCache = ThumbnailCache()
     
     // Attempts to add the image to the store. dateTaken is when the original photo was taken, which is added to the properties.
     func addImage(image: UIImage, dateTaken: NSDate) -> Result {
@@ -77,7 +80,7 @@ public class PhotoStore {
                 return .Error(error!)
             }
             imageProperties[filePath] = [.DateTaken : dateTaken]
-            self.addThumbnailToCache(key: filePath)(image: image)
+            thumbnailCache.addThumbnailForImage(image, atPath: filePath)
             return .Success()
         }
         let userInfo = [NSLocalizedDescriptionKey : "Unable to add the image - the image is corrupt."]
@@ -87,26 +90,14 @@ public class PhotoStore {
     
     // Retrieves the image in the collection which is at index position <index> or an error if it is not found.
     func imageAtIndex(index: UInt) -> ResultOf<UIImage> {
-        return imageFromFile(thumbnailPaths[Int(index)])
+        return ImageManager.imageFromFile(imagePaths[Int(index)])
     }
     
-    // Like imageAtIndex but receives a smaller thumbnail image.
-    func thumbnailAtIndex(index: UInt) -> ResultOf<UIImage> {
-        let path = thumbnailPaths[Int(index)]
-        if let propertyDict = imageProperties[path] {
-            if let thumb = propertyDict[PropertyKey.Thumbnail] as? UIImage {
-                return ResultOf(thumb) // Success, return the cached image.
-            }
-        }
-        // If the thumbnail was not already cached, create it and return it now.
-        return imageFromFile(path).map(
-            addThumbnailToCache(key: path))
-    }
     
     
     // Deletes the images at the specified index paths.
     func deleteImagesAtIndexPaths(paths: [NSIndexPath]) -> Result {
-        return eachOf(paths.map{ self.thumbnailPaths[$0.item]}) { (index, path) -> Result in
+        return eachOf(paths.map{ self.imagePaths[$0.item]}) { (index, path) -> Result in
             var error: NSError?
             if !self.fileManager.removeItemAtPath(path, error: &error) {
                 if error == nil { error = self.defaultError }
@@ -120,7 +111,7 @@ public class PhotoStore {
     // Overwrites the image at the given position with a new image.
     // Returns an error if there is no image at index already.
     func replaceImageAtIndex(index: UInt, withImage newImage: UIImage) -> Result {
-        let filePath = thumbnailPaths[Int(index)]
+        let filePath = imagePaths[Int(index)]
         let fileData = UIImageJPEGRepresentation(newImage, 1.0)
         var error: NSError?
         if !fileData.writeToFile(filePath, options: .DataWritingAtomic, error: &error) {
@@ -128,48 +119,25 @@ public class PhotoStore {
             return .Error(error!)
         }
         // Update the thumbnail to display the new image.
-        return addThumbnailToCache(key: filePath)(image: newImage).result
+        return thumbnailCache.addThumbnailForImage(newImage, atPath: filePath).result
      }
 
     // MARK: Image manipulation
+    
+    // Return a thumbnail image for the image stored at index INDEX.
+    func thumbnailAtIndex(index: UInt) -> ResultOf<UIImage> {
+        return thumbnailCache.thumbnailForImage(imagePaths[Int(index)])
+    }
     
     // Copies the image at position <index> into the camera roll.
     func copyImageToCameraRoll(index: UInt) -> Result {
         return imageAtIndex(index).map0(alwaysOk{ UIImageWriteToSavedPhotosAlbum($0, nil, nil, nil) })
     }
-    
-    
-    // Compose the two photos given to make a stereogram.
-    func makeStereogramWithLeftPhoto(leftPhoto: UIImage, rightPhoto: UIImage) -> ResultOf<UIImage> {
-        assert(leftPhoto.scale == rightPhoto.scale, "Image scales \(leftPhoto.scale) and \(rightPhoto.scale) must be the same.")
-        let stereogramSize = CGSizeMake(leftPhoto.size.width + rightPhoto.size.width, max(leftPhoto.size.height, rightPhoto.size.height))
-        
-        var stereogram: UIImage?
-        UIGraphicsBeginImageContextWithOptions(stereogramSize, false, leftPhoto.scale)
-        // try
-        leftPhoto.drawAtPoint(CGPointZero)
-        rightPhoto.drawAtPoint(CGPointMake(leftPhoto.size.width, 0))
-        stereogram = UIGraphicsGetImageFromCurrentImageContext()
-        // finally
-        UIGraphicsEndImageContext()
-
-        if let s = stereogram {
-            return ResultOf(s)
-        }
-        return .Error(NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntCreateStereogram.rawValue, userInfo: nil))
-    }
-    
 
     // Toggles the viewing method from crosseye to walleye and back for the image at position <index>.
     func changeViewingMethod(index: UInt) -> Result {
-        
-        let swapImageHalves = { (img: UIImage) -> ResultOf<UIImage> in
-            return and( self.getHalfOfImage(img, whichHalf: .LeftHalf), self.getHalfOfImage(img, whichHalf: .RightHalf) )
-            .map( { (leftImage,rightImage) in return self.makeStereogramWithLeftPhoto(rightImage, rightPhoto: leftImage) } )
-        }
-        
-        return imageAtIndex(index)
-            .map( swapImageHalves )
+       return imageAtIndex(index)
+            .map( ImageManager.changeViewingMethod )
             .map0 { (swappedImage: UIImage) -> Result in return self.replaceImageAtIndex(index, withImage: swappedImage) }
     }
     
@@ -177,14 +145,12 @@ public class PhotoStore {
     // Save the image property file.
     func saveProperties() -> Result {
         
-        // Make a copy of the properties dict which does not include the thumbnails, converting the type from a Swift dict to an NSDictionary
+        // Make a copy of the properties dict, converting the type from a Swift dict to an NSDictionary. This is a hack, as NSDictionary has a save function I want to use.
         var propertyArrayToSave = NSMutableDictionary()
         for (filePath, imgPropertyDict)  in imageProperties {
             let newProperties = NSMutableDictionary()
             for (k,v) in imgPropertyDict {
-                if k != .Thumbnail {
-                    newProperties.setValue(v, forKey: k.rawValue)
-                }
+                newProperties.setValue(v, forKey: k.rawValue)
             }
             propertyArrayToSave.setValue(newProperties, forKey: filePath)
         }
@@ -231,7 +197,6 @@ public class PhotoStore {
     private enum PropertyKey: String {
         // Keys for the individual image property dicts.
     case Orientation   = "Orientation",     // Portrait or Landscape.
-         Thumbnail     = "Thumbnail",       // Image thumbnail.
          DateTaken     = "DateTaken",       // Date original photo was taken.
          ViewMode      = "ViewMode"         // Crosseyed, Walleyed, Red/Green, Random-dot
         // Keys for the master property dict.
@@ -258,11 +223,6 @@ public class PhotoStore {
         let folders = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
         assert(!folders.isEmpty, "No document directory specified.")
         return folders[0].stringByAppendingPathComponent("Properties")
-    }
-    
-    // Array of paths to image thumbnails.
-    private var thumbnailPaths: [FileName] {
-        return sorted(imageProperties.keys)
     }
     
     // A default error to return if the OS doesn't provide one. Nothing we can do in that case, as we have no idea what went wrong.
@@ -299,54 +259,6 @@ public class PhotoStore {
         var filePath = photoDir.stringByAppendingPathComponent(newUIDString).stringByAppendingString(".jpg")
         assert(!fileManager.fileExistsAtPath(filePath)) // Name should be unique so no photo should exist yet.
         return filePath
-    }
-    
-    // Function to return half an image.
-    private enum WhichHalf { case RightHalf, LeftHalf }
-    private func getHalfOfImage(image: UIImage,  whichHalf: WhichHalf) -> ResultOf<UIImage> {
-        let rectToKeep = (whichHalf == .LeftHalf)
-            ? CGRectMake(0, 0, image.size.width / 2.0, image.size.height)
-            : CGRectMake(image.size.width / 2.0, 0, image.size.width / 2.0, image.size.height )
-        
-        let imgPartRef = CGImageCreateWithImageInRect(image.CGImage, rectToKeep)
-        if let i = UIImage(CGImage:imgPartRef) { return ResultOf(i) }
-        let userInfo = [NSLocalizedDescriptionKey : "Unable to create thumbnail. Unknown error."]
-        return .Error(NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.UnknownError.rawValue, userInfo: userInfo))
-    }
-    
-    // Load an image from the file path specified.
-    private func imageFromFile(filePath: String) -> ResultOf<UIImage> {
-        let exists = fileManager.fileExistsAtPath(filePath)
-        assert(exists, "filePath [\(filePath)] does not point to a file.")
-        var error: NSError?
-        
-        let data = NSData(contentsOfFile:filePath, options:.allZeros, error:&error)
-        if data == nil {
-            if error == nil { error = defaultError }
-            return .Error(error!)
-        }
-        
-        let img = UIImage(data:data!)
-        let userInfo = [NSLocalizedDescriptionKey : "Unable to create the image from the data in the stored file."]
-        if img == nil { return .Error(NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntLoadImageProperties.rawValue, userInfo: userInfo)) }
-        
-        return ResultOf(img!)
-    }
- 
-    // Create a thumbnail for the image provided and add it to the thumbnail cache under the specified key.
-    // Returns the thumbnail if successful.
-    private func addThumbnailToCache(#key: String)(#image: UIImage) -> ResultOf<UIImage> {
-        // Use the left half of the image for the thumbnail, as having both makes the actual image content too small to see.
-        return getHalfOfImage(image, whichHalf: .LeftHalf).map { leftHalf in
-            let thumbnail = leftHalf.thumbnailImage(thumbnailSize: self.thumbnailSize, transparentBorderSize: 0, cornerRadius: 0, interpolationQuality: kCGInterpolationLow)
-            var properties: PropertyDict! = self.imageProperties[key]
-            if properties == nil {
-                properties = PropertyDict()
-                self.imageProperties[key] = properties!
-            }
-            properties[.Thumbnail] = thumbnail
-            return ResultOf(thumbnail)
-        }
     }
     
     private func loadImageProperties(path: String) -> ResultOf<[FileName : PropertyDict]> {
