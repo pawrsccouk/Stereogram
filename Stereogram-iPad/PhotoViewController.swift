@@ -9,7 +9,7 @@
 import UIKit
 import MobileCoreServices
 
-class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UICollectionViewDelegate, UICollectionViewDataSource {
+class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UICollectionViewDelegate {
 
     @IBOutlet weak var photoCollection: UICollectionView!
 
@@ -49,9 +49,13 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
             }
         }
         
+        // Connect up the thumbnail provider as data source to the collection view.
+        if collectionViewThumbnailProvider == nil {
+            collectionViewThumbnailProvider = CollectionViewThumbnailProvider(photoStore: photoStore, photoCollection: photoCollection)
+            photoCollection.dataSource = collectionViewThumbnailProvider
+        }
+        
         setupNavigationButtons()
-
-        photoCollection.registerClass(ImageThumbnailCell.self, forCellWithReuseIdentifier: ImageThumbnailCellId)
         photoCollection.allowsSelection = true
         photoCollection.allowsMultipleSelection = true
         
@@ -202,29 +206,6 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
         firstPhoto = nil
     }
     
-    // MARK: - Collection View Data Source
-    
-    func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
-        return 1
-    }
-    
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        assert(section == 0, "data requested for section \(section), which is out of range.")
-        return photoStore.count
-    }
-    
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(ImageThumbnailCellId, forIndexPath: indexPath) as ImageThumbnailCell
-        switch photoStore.thumbnailAtIndex(UInt(indexPath.item)) {
-        case .Success(let image):
-            cell.image = image.value
-        case .Error(let error):
-            NSLog("Error receiving image at \(indexPath) from the photoStore \(photoStore)")
-            NSLog("The error was \(error)")
-        }
-        return cell
-    }
-    
     // MARK: - Collection View Delegate
     
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
@@ -252,6 +233,7 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
     // This is the first of the two images we store when taking the stereogram.
     // State-based -only relevant when in the process of taking a photo. TODO: Move to a state-machine instead of a boolean flag.
     private var firstPhoto: UIImage?
+    private var collectionViewThumbnailProvider: CollectionViewThumbnailProvider?
     
 
     // Creates the navigation buttons and adds them to the navigation controller. Called from the initializers as part of the setup process.
@@ -371,7 +353,6 @@ class PhotoViewController: UIViewController, UIImagePickerControllerDelegate, UI
         }
     }
     
-    private let ImageThumbnailCellId = "ImageThumbnailCell"
     
 }
 

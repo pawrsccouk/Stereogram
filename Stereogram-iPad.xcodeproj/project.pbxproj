@@ -27,6 +27,7 @@
 		57A1E68A1A6D1EDE00B97F60 /* Set.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E6891A6D1EDE00B97F60 /* Set.swift */; };
 		57A1E68C1A6F3BCC00B97F60 /* ThumbnailCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E68B1A6F3BCC00B97F60 /* ThumbnailCache.swift */; };
 		57A1E68E1A6F3F8200B97F60 /* ImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E68D1A6F3F8200B97F60 /* ImageManager.swift */; };
+		57A1E6901A716B9700B97F60 /* CollectionViewThumbnailProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E68F1A716B9700B97F60 /* CollectionViewThumbnailProvider.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +65,7 @@
 		57A1E6891A6D1EDE00B97F60 /* Set.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Set.swift; sourceTree = "<group>"; };
 		57A1E68B1A6F3BCC00B97F60 /* ThumbnailCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThumbnailCache.swift; sourceTree = "<group>"; };
 		57A1E68D1A6F3F8200B97F60 /* ImageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageManager.swift; sourceTree = "<group>"; };
+		57A1E68F1A716B9700B97F60 /* CollectionViewThumbnailProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollectionViewThumbnailProvider.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -182,6 +184,7 @@
 				57503BB11A62D3A000648FA1 /* PhotoViewController.swift */,
 				57A1E67D1A69CA1500B97F60 /* FullImageViewController.swift */,
 				57A1E6751A67C20A00B97F60 /* CameraOverlayViewController.swift */,
+				57A1E68F1A716B9700B97F60 /* CollectionViewThumbnailProvider.swift */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -290,6 +293,7 @@
 			files = (
 				57A1E68C1A6F3BCC00B97F60 /* ThumbnailCache.swift in Sources */,
 				57503BB21A62D3A000648FA1 /* PhotoViewController.swift in Sources */,
+				57A1E6901A716B9700B97F60 /* CollectionViewThumbnailProvider.swift in Sources */,
 				57503BD01A62D42E00648FA1 /* PhotoStore.swift in Sources */,
 				57A1E6761A67C20A00B97F60 /* CameraOverlayViewController.swift in Sources */,
 				57503BD21A62D48700648FA1 /* Result.swift in Sources */,
