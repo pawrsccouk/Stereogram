@@ -10,9 +10,7 @@ import UIKit
 
 class CameraOverlayViewController: UIViewController {
 
-    //    __weak IBOutlet UIButton *takePhotoButton;
     @IBOutlet weak var helpTextItem: UIBarButtonItem!
-    //    __weak IBOutlet UITextView * instructionLabel;
     @IBOutlet weak var crosshair: UIImageView!
     
     // Help text to display to the user during the image taking process.
@@ -68,7 +66,7 @@ class CameraOverlayViewController: UIViewController {
                     method(picker)
                     return
                 } else {
-                   fatalError("Delegate \(delegate) does not respond to a the cancel message.")
+                   fatalError("Delegate \(delegate) does not respond to the cancel message.")
                 }
             }
         }
