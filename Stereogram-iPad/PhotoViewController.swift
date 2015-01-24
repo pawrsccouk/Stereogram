@@ -82,7 +82,7 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
         if let svc = stereogramViewController {
             if let img = svc.stereogram  {
                 showApprovalWindowForImage(img)
-                svc.stereogram = nil
+                svc.reset()
             }
         }
     }

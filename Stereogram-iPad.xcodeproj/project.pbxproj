@@ -68,6 +68,7 @@
 		57A1E68D1A6F3F8200B97F60 /* ImageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageManager.swift; sourceTree = "<group>"; };
 		57A1E68F1A716B9700B97F60 /* CollectionViewThumbnailProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollectionViewThumbnailProvider.swift; sourceTree = "<group>"; };
 		57A1E6911A71713300B97F60 /* StereogramViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StereogramViewController.swift; sourceTree = "<group>"; };
+		57A1E6931A73593600B97F60 /* TODO.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = TODO.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +110,7 @@
 		57503BAC1A62D3A000648FA1 /* Stereogram-iPad */ = {
 			isa = PBXGroup;
 			children = (
+				57A1E6931A73593600B97F60 /* TODO.txt */,
 				57503BDA1A63115B00648FA1 /* UIImage Extensions */,
 				57503BD31A62EA9300648FA1 /* Model */,
 				57A1E6811A6C7F0600B97F60 /* View */,

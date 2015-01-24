@@ -1,0 +1,4 @@
+TODO for Stereogram
+
+Create a background for the photo collection view when it is empty.
+Check how apple handles collection editing, and do the same.
