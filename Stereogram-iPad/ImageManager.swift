@@ -48,7 +48,7 @@ class ImageManager {
         return .Error(NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntCreateStereogram.rawValue, userInfo: nil))
     }
     
-    // Toggles the viewing method from crosseye to walleye and back for the image at position <index>.
+    // Returns a copy of the specifed image with the viewing method swapped. The viewing method can be crosseye or walleye.
     class func changeViewingMethod(image: UIImage) -> ResultOf<UIImage> {
         return and( self.getHalfOfImage(image, whichHalf: .LeftHalf),
                     self.getHalfOfImage(image, whichHalf: .RightHalf) )

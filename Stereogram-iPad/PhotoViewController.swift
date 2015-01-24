@@ -99,9 +99,12 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
     func actionMenu() {
         let alertController = UIAlertController(title: "Select an action", message: "", preferredStyle: UIAlertControllerStyle.ActionSheet)
         alertController.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
-        alertController.addAction(UIAlertAction(title: "Delete", style: .Destructive, handler: { (action) in self.deletePhotos(self.photoCollection) } ))
-        alertController.addAction(UIAlertAction(title: "Change viewing method", style: .Default, handler: { (action) in self.changeViewingMethod() } ))
-        alertController.addAction(UIAlertAction(title: "Copy to gallery", style: .Default, handler: { (action) in self.copyPhotosToCameraRoll(self.photoCollection) }))
+        alertController.addAction(UIAlertAction(title: "Delete", style: .Destructive) { [unowned self] (action) in
+            self.deletePhotos(self.photoCollection)
+        })
+        alertController.addAction(UIAlertAction(title: "Copy to gallery", style: .Default) { [unowned self] (action) in
+            self.copyPhotosToCameraRoll(self.photoCollection.indexPathsForSelectedItems() as [NSIndexPath])
+        })
         alertController.popoverPresentationController!.barButtonItem = exportItem
         self.presentViewController(alertController, animated: true, completion: nil)
     }
@@ -121,6 +124,10 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
         switch photoStore.imageAtIndex(UInt(indexPath.item)) {
         case .Success(let image):
             let fullImageViewController = FullImageViewController(image: image.value, forApproval: false)
+            fullImageViewController.imageUpdatedCallback = { newImage in
+                self.photoStore.replaceImageAtIndex(UInt(indexPath.item), withImage: newImage)
+                self.photoCollection.reloadItemsAtIndexPaths([indexPath])
+            }
             navigationController?.pushViewController(fullImageViewController, animated: true)
         case .Error(let error):
             error.showAlertWithTitle("Error accessing image at index path \(indexPath)")
@@ -132,8 +139,8 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
     func showApprovalWindowForImage(image: UIImage) {
         let dateTaken = NSDate()
         let fullImageViewController = FullImageViewController(image: image, forApproval: true)
-        fullImageViewController.approvalBlock = {
-            switch self.photoStore.addImage(image, dateTaken: dateTaken) {
+        fullImageViewController.approvalCallback = { newImage in
+            switch self.photoStore.addImage(newImage, dateTaken: dateTaken) {
             case .Success():
                 self.photoCollection.reloadData()
            case .Error(let error):
@@ -187,15 +194,11 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
         return "Do you really want to delete these \(numToDelete) photos?\n\(postscript)"
     }
 
-    // A shared method that does something to one of the photos. Takes a block holding the action to perform.
-    // The block takes an integer, which is an index into the collection of image thumbnails in the order they appear
-    // in the collection view.  The action must not invalidate the collection view indexes as it may be called more than once.
-    typealias ActionBlock = (UInt) -> Result
-    private func performNondestructiveAction(photoCollection: UICollectionView, action: ActionBlock, errorTitle: String) {
-        for indexPath in photoCollection.indexPathsForSelectedItems() as [NSIndexPath] {
-            let result = action(UInt(indexPath.indexAtPosition(1)))
-
-            result.onError() { error in error.showAlertWithTitle(errorTitle) }
+    // Copy the photos in the given array of index paths to the app's camera roll.
+    private func copyPhotosToCameraRoll(selectedIndexes: [NSIndexPath]) {
+        for indexPath in selectedIndexes {
+            let result = photoStore.copyImageToCameraRoll(UInt(indexPath.indexAtPosition(1)))
+            result.onError() { error in error.showAlertWithTitle("Error exporting to camera roll") }
             if !result.success { return }   // Stop on the first error, to avoid swamping the user with alerts.
         }
         
@@ -203,12 +206,6 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
         for indexPath in photoCollection.indexPathsForSelectedItems() as [NSIndexPath] {
             photoCollection.deselectItemAtIndexPath(indexPath, animated: false)
         }
-    }
-    
-    private func copyPhotosToCameraRoll(photoCollection: UICollectionView) {
-        performNondestructiveAction(photoCollection, action: { (index) -> Result in
-            return self.photoStore.copyImageToCameraRoll(index)
-        }, errorTitle: "Error exporting to camera roll")
     }
     
     private func resizeActivityIndicator() {
@@ -222,56 +219,24 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
     private var showActivityIndicator: Bool {
         get { return !activityIndicator.hidden }
         set {
-            // TODO: Check the activity indicator still works.
             activityIndicator.hidden = !newValue
             if newValue {
-                // view.addSubview(activityIndicator)
                 activityIndicator.startAnimating()
             } else {
                 activityIndicator.stopAnimating()
-                // activityIndicator.removeFromSuperview()
             }
         }
     }
     
-    // Toggle from cross-eye to wall-eye and back for the selected items.
-    // Create the new images on a separate thread, then call back to the main thread to replace them in the photo collection.
-    private func changeViewingMethod() {
-        self.showActivityIndicator = true
-        let selectedItems = photoCollection.indexPathsForSelectedItems() as [NSIndexPath]
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () in
-            for indexPath in selectedItems {
-                // Index path has 0 = section (always 0), 1 = item.
-                assert(indexPath.indexAtPosition(0) == 0, "Index path section is \(indexPath.indexAtPosition(0)), should be 0")
-                let result = self.photoStore.changeViewingMethod(UInt(indexPath.indexAtPosition(1)))
-                result.onError() { error in
-                    dispatch_async(dispatch_get_main_queue()) {
-                        error.showAlertWithTitle("Error changing viewing method.")
-                        self.showActivityIndicator = false
-                    }
-                }
-                if !result.success { return } // avoid showing the user multiple error alerts.
-            }
-            
-            // Back on the main thread, deselect all the thumbnails and stop the activity timer.
-            dispatch_async(dispatch_get_main_queue()) { () -> Void in
-                for indexPath in selectedItems {
-                    self.photoCollection.deselectItemAtIndexPath(indexPath, animated: true)
-                }
-                self.showActivityIndicator = false
-                self.photoCollection.reloadItemsAtIndexPaths(selectedItems)
-            }
-        }
-    }
     
     private func deletePhotos(photoCollection: UICollectionView) {
         let indexPaths = photoCollection.indexPathsForSelectedItems() as [NSIndexPath]
         if indexPaths.count > 0 {
             let message = formatDeleteMessage(UInt(indexPaths.count))
             let alertController = UIAlertController(title: "Confirm deletion", message: message, preferredStyle: .Alert)
-            alertController.addAction(UIAlertAction(title: "Delete", style: UIAlertActionStyle.Destructive) { (action) in
+            alertController.addAction(UIAlertAction(title: "Delete", style: UIAlertActionStyle.Destructive) { [unowned store = self.photoStore!] (action) in
                 NSLog("Deleting images at index paths: \(indexPaths)")
-                let result = self.photoStore.deleteImagesAtIndexPaths(indexPaths)
+                let result = store.deleteImagesAtIndexPaths(indexPaths)
                 result.onError() { $0.showAlertWithTitle("Error deleting photos") }
                 photoCollection.reloadData()
             })
