@@ -23,12 +23,12 @@
 		57A1E67E1A69CA1500B97F60 /* FullImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E67D1A69CA1500B97F60 /* FullImageViewController.swift */; };
 		57A1E6851A6C7F8200B97F60 /* CameraOverlayView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57A1E6821A6C7F8200B97F60 /* CameraOverlayView.xib */; };
 		57A1E6861A6C7F8200B97F60 /* FullImageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57A1E6831A6C7F8200B97F60 /* FullImageView.xib */; };
-		57A1E6871A6C7F8200B97F60 /* PhotoView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57A1E6841A6C7F8200B97F60 /* PhotoView.xib */; };
 		57A1E68A1A6D1EDE00B97F60 /* Set.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E6891A6D1EDE00B97F60 /* Set.swift */; };
 		57A1E68C1A6F3BCC00B97F60 /* ThumbnailCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E68B1A6F3BCC00B97F60 /* ThumbnailCache.swift */; };
 		57A1E68E1A6F3F8200B97F60 /* ImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E68D1A6F3F8200B97F60 /* ImageManager.swift */; };
 		57A1E6901A716B9700B97F60 /* CollectionViewThumbnailProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E68F1A716B9700B97F60 /* CollectionViewThumbnailProvider.swift */; };
 		57A1E6921A71713300B97F60 /* StereogramViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E6911A71713300B97F60 /* StereogramViewController.swift */; };
+		57B41CC71A738D500002FB5E /* PhotoView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57B41CC61A738D500002FB5E /* PhotoView.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,13 +62,13 @@
 		57A1E67D1A69CA1500B97F60 /* FullImageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FullImageViewController.swift; sourceTree = "<group>"; };
 		57A1E6821A6C7F8200B97F60 /* CameraOverlayView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CameraOverlayView.xib; sourceTree = "<group>"; };
 		57A1E6831A6C7F8200B97F60 /* FullImageView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FullImageView.xib; sourceTree = "<group>"; };
-		57A1E6841A6C7F8200B97F60 /* PhotoView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PhotoView.xib; sourceTree = "<group>"; };
 		57A1E6891A6D1EDE00B97F60 /* Set.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Set.swift; sourceTree = "<group>"; };
 		57A1E68B1A6F3BCC00B97F60 /* ThumbnailCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThumbnailCache.swift; sourceTree = "<group>"; };
 		57A1E68D1A6F3F8200B97F60 /* ImageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageManager.swift; sourceTree = "<group>"; };
 		57A1E68F1A716B9700B97F60 /* CollectionViewThumbnailProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollectionViewThumbnailProvider.swift; sourceTree = "<group>"; };
 		57A1E6911A71713300B97F60 /* StereogramViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StereogramViewController.swift; sourceTree = "<group>"; };
 		57A1E6931A73593600B97F60 /* TODO.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = TODO.txt; sourceTree = "<group>"; };
+		57B41CC61A738D500002FB5E /* PhotoView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PhotoView.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -176,7 +176,7 @@
 			children = (
 				57A1E6821A6C7F8200B97F60 /* CameraOverlayView.xib */,
 				57A1E6831A6C7F8200B97F60 /* FullImageView.xib */,
-				57A1E6841A6C7F8200B97F60 /* PhotoView.xib */,
+				57B41CC61A738D500002FB5E /* PhotoView.xib */,
 				57A1E6771A67C2D500B97F60 /* ImageThumbnailCell.swift */,
 			);
 			name = View;
@@ -276,8 +276,8 @@
 			files = (
 				57A1E6861A6C7F8200B97F60 /* FullImageView.xib in Resources */,
 				57A1E6851A6C7F8200B97F60 /* CameraOverlayView.xib in Resources */,
+				57B41CC71A738D500002FB5E /* PhotoView.xib in Resources */,
 				57503BBA1A62D3A000648FA1 /* LaunchScreen.xib in Resources */,
-				57A1E6871A6C7F8200B97F60 /* PhotoView.xib in Resources */,
 				57503BB71A62D3A000648FA1 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
