@@ -12,6 +12,19 @@
 import UIKit
 import MobileCoreServices
 
+
+@objc protocol StereogramViewControllerDelegate {
+    
+    // Triggered when the controller starts displaying the camera view. photoNumber will be 1 or 2 depending on which photo is being taken.
+    optional func stereogramViewController(controller: StereogramViewController, takingPhoto photoNumber: UInt)
+    
+    // Called when the stereogram has been taken. Here you need to save the image and dismiss the view controller.
+    func stereogramViewController(controller: StereogramViewController, createdStereogram stereogram: UIImage)
+    
+    // Called if the user cancels the view controller and doesn't want to create a stereogram.  The delegate must dismiss the view controller here.
+    func stereogramViewControllerWasCancelled(controller: StereogramViewController)
+}
+
 // This class manages the stereogram view, creating the camera overlay controller, presenting them both and acting as delegate for the camera.
 // It encapsulates the state needed to take a stereogram and just holds the completed stereogram.
 
@@ -25,9 +38,10 @@ class StereogramViewController : NSObject, UIImagePickerControllerDelegate, UINa
         }
     }
     
-   
-    override init() {
-        cameraOverlayController = CameraOverlayViewController()
+    unowned var delegate: StereogramViewControllerDelegate
+    
+    init(delegate: StereogramViewControllerDelegate) {
+        self.delegate = delegate
         super.init()
     }
     
@@ -50,25 +64,34 @@ class StereogramViewController : NSObject, UIImagePickerControllerDelegate, UINa
             
             self.parentViewController = parentViewController
             
-            let pickerController = UIImagePickerController()
-            pickerController.sourceType = .Camera
-            pickerController.mediaTypes = [kUTTypeImage]  // This is the default.
-            pickerController.delegate   = self
-            pickerController.showsCameraControls = false
+            let picker = UIImagePickerController()
+            pickerController = picker
+            picker.sourceType = .Camera
+            picker.mediaTypes = [kUTTypeImage]  // This is the default.
+            picker.delegate   = self
+            picker.showsCameraControls = false
             
             // Set up a custom overlay view for the camera. Ensure our custom view frame fits within the camera view's frame.
-            cameraOverlayController.view.frame = pickerController.view.frame
-            pickerController.cameraOverlayView = cameraOverlayController.view
+            cameraOverlayController.view.frame = picker.view.frame
+            picker.cameraOverlayView = cameraOverlayController.view
             cameraOverlayController.imagePickerController = pickerController
             cameraOverlayController.helpText = "Take the first photo"
 
-            parentViewController.presentViewController(pickerController, animated: true, completion: nil)
+            parentViewController.presentViewController(picker, animated: true, completion: nil)
             
             state = .TakingFirstPhoto
+            delegate.stereogramViewController?(self, takingPhoto: 1)
             
         case .TakingFirstPhoto, .TakingSecondPhoto:
             fatalError("State \(state) was invalid. Another photo operation already in progress.")
         }
+    }
+    
+    func dismissViewControllerAnimated(animated: Bool, completion: (() -> Void)?) {
+        if let picker = pickerController {
+            picker.dismissViewControllerAnimated(animated, completion: completion)
+        }
+        pickerController = nil
     }
 
     // MARK: - Image Picker Delegate
@@ -80,6 +103,7 @@ class StereogramViewController : NSObject, UIImagePickerControllerDelegate, UINa
             let firstPhoto = imageFromPickerInfoDict(info)
             state = .TakingSecondPhoto(firstPhoto: firstPhoto)
             cameraOverlayController.helpText = "Take the second photo"
+            delegate.stereogramViewController?(self, takingPhoto: 2)
             
         case .TakingSecondPhoto(let firstPhoto):
             
@@ -97,10 +121,11 @@ class StereogramViewController : NSObject, UIImagePickerControllerDelegate, UINa
                 switch makeStereogram(firstPhoto, secondPhoto) {
                 case .Success(let image):
                     // Once the stereogram is made, update the UI code back on the main thread.
-                    dispatch_async(dispatch_get_main_queue()) { () -> Void in
+                    dispatch_async(dispatch_get_main_queue()) {
                         self.state = .Complete(stereogram: image.value)
-                        picker.dismissViewControllerAnimated(false, completion: nil)
+                        //picker.dismissViewControllerAnimated(false, completion: nil)
                         self.cameraOverlayController.showWaitIcon = false
+                        self.delegate.stereogramViewController(self, createdStereogram: image.value)
                     }
                 case .Error(let error):
                     if let parent = self.parentViewController {
@@ -118,8 +143,9 @@ class StereogramViewController : NSObject, UIImagePickerControllerDelegate, UINa
     
     
     func imagePickerControllerDidCancel(picker: UIImagePickerController) {
-        picker.dismissViewControllerAnimated(true, completion: nil)
+        //picker.dismissViewControllerAnimated(true, completion: nil)
         state = .Ready
+        delegate.stereogramViewControllerWasCancelled(self)
     }
     
     // MARK: - Private data
@@ -152,7 +178,8 @@ class StereogramViewController : NSObject, UIImagePickerControllerDelegate, UINa
     private var state = State.Ready
     
     private weak var parentViewController: UIViewController!
-    private let cameraOverlayController: CameraOverlayViewController
+    private let cameraOverlayController = CameraOverlayViewController()
+    private var pickerController: UIImagePickerController?
 
     // Get the edited photo from the info dictionary if the user has edited it. If there is no edited photo, get the original photo. If there is no original photo, terminate with an error.
     private func imageFromPickerInfoDict(infoDict: [NSObject : AnyObject]) -> UIImage {

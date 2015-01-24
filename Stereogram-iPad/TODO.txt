@@ -1,8 +1,5 @@
 TODO for Stereogram
 
-Check how apple handles collection editing, and do the same.
-    In particular, does performing an operation on a collection un-set the editing flag?
-    What feedback does the app give that an editing operation is in process?
 
 Store the images separately, instead of compositing them into one image. This allows...
     Add other stereogram types such as animated GIF or magic-eye / RDS.
@@ -13,9 +10,6 @@ Add the ability to crop on one image, and have the other image update to match i
 Allow users to take a photo by clicking on the camera screen.
 Separate the Take and Cancel button on the camera screen and make them more thumb-friendly.
 
-Technical changes:
-    Switch from updating images in viewDidLoad() to passing callbacks to dismissViewController:animated:callback()
-
 Add polish:
     Create some welcome text to display for the WelcomeViewController.
     Create LaunchScreen.xib.
@@ -23,4 +17,5 @@ Add polish:
     Look into builds and packaging options for App Store.
     Fiddle with the camera view and make sure it looks good in all sizes and orientations.
     Make a better crosshair, or a selection of them (+, X and T for example)
+    What feedback does the app give that an editing operation is in process?
 

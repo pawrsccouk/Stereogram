@@ -8,7 +8,7 @@
 
 import UIKit
 
-class PhotoViewController : UIViewController, UICollectionViewDelegate {
+class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImageViewControllerDelegate, StereogramViewControllerDelegate {
 
     @IBOutlet weak var photoCollection: UICollectionView!
 
@@ -16,6 +16,7 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
 
     override init(nibName: String?, bundle: NSBundle?) {
         super.init(nibName: "PhotoView", bundle: bundle)
+        stereogramViewController = StereogramViewController(delegate: self)
     }
     
     convenience override init() {
@@ -25,6 +26,7 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
     // View controllers are created manually for this project. This should never be called.
     required init(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+        stereogramViewController = StereogramViewController(delegate: self)
     }
 
     
@@ -32,30 +34,10 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Load the properties (images etc.)
-        // HACK: This assumes the PhotoViewController is the first thing to access the photoStore.
-        // If it isn't, then whatever is will get the wrong values until the data is loaded.
-        // the problem is that I want to display errors in this case, and I can't do that until we have a view to display them on.
-        if photoStore == nil {
-            var error: NSError?
-            photoStore = PhotoStore(error: &error)
-            if photoStore == nil {
-                if let e = error {
-                    e.showAlertWithTitle("Error initialising the photo store", parentViewController: self)
-                }
-                fatalError("Failed to initialise the photo store with error \(error)")
-            }
-        }
-        
         // Connect up the thumbnail provider as data source to the collection view.
         if collectionViewThumbnailProvider == nil {
             collectionViewThumbnailProvider = CollectionViewThumbnailProvider(photoStore: photoStore, photoCollection: photoCollection)
             photoCollection.dataSource = collectionViewThumbnailProvider
-        }
-        
-        // Connect up the sterogram view controller.
-        if stereogramViewController == nil {
-            stereogramViewController = StereogramViewController()
         }
         
         setupNavigationButtons()
@@ -63,37 +45,30 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
         photoCollection.allowsMultipleSelection = true
         
         // Set the thumbnail size from the store
-        assert(photoCollection.collectionViewLayout.isKindOfClass(UICollectionViewFlowLayout.self), "Photo collection view layout is not a flow layout.")
-        let flowLayout = photoCollection.collectionViewLayout as UICollectionViewFlowLayout
-        flowLayout.itemSize = thumbnailSize
-        flowLayout.invalidateLayout()
+        setThumbnailSize(thumbnailSize: thumbnailSize)
     }
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
-        
-        // Add the activity indicator to the view if it is not there already. It starts off hidden.
-        if !activityIndicator.isDescendantOfView(view) {
-            view.addSubview(activityIndicator)
-        }
-        resizeActivityIndicator()
-        
-        // If stereogram is set, we have just reappeared from under the camera controller, and we need to pop up an approval window for the user to accept the new stereogram.
-        if let svc = stereogramViewController {
-            if let img = svc.stereogram  {
-                showApprovalWindowForImage(img)
-                svc.reset()
+        setupActivityIndicator()
+    }
+    
+    override func setEditing(editing: Bool, animated: Bool) {
+        super.setEditing(editing, animated: animated)
+        // Clear the selected ticks once we stop editing the photo collection.
+        if !editing {
+            for indexPath in photoCollection.indexPathsForSelectedItems() as [NSIndexPath] {
+                photoCollection.deselectItemAtIndexPath(indexPath, animated: animated)
             }
         }
     }
     
 
+
     // MARK: - Callbacks
     
     func takePicture() {
-        if let svc = stereogramViewController {
-            svc.takePicture(self)
-        }
+        stereogramViewController.takePicture(self)
     }
     
     func actionMenu() {
@@ -109,44 +84,20 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
         self.presentViewController(alertController, animated: true, completion: nil)
     }
     
-    override func setEditing(editing: Bool, animated: Bool) {
-        super.setEditing(editing, animated: animated)
-        // Clear the selected ticks once we stop editing the photo collection.
-        if !editing {
-            for indexPath in photoCollection.indexPathsForSelectedItems() as [NSIndexPath] {
-                photoCollection.deselectItemAtIndexPath(indexPath, animated: false)
-            }
-        }
-    }
-    
     // Present an image view showing the image at the given index path.
     func showImageAtIndexPath(indexPath: NSIndexPath) {
         switch photoStore.imageAtIndex(UInt(indexPath.item)) {
         case .Success(let image):
-            let fullImageViewController = FullImageViewController(image: image.value, forApproval: false)
-            fullImageViewController.imageUpdatedCallback = { newImage in
-                self.photoStore.replaceImageAtIndex(UInt(indexPath.item), withImage: newImage)
-                self.photoCollection.reloadItemsAtIndexPaths([indexPath])
-            }
-            navigationController?.pushViewController(fullImageViewController, animated: true)
+            let fullImageViewController = FullImageViewController(image: image.value, atIndexPath: indexPath, delegate: self)
+            navigationController!.pushViewController(fullImageViewController, animated: true)
         case .Error(let error):
             error.showAlertWithTitle("Error accessing image at index path \(indexPath)", parentViewController: self)
         }
     }
     
     // Called to present the image to the user, with options to accept or reject it.
-    // If the user accepts, the photo is added to the photo store.
     func showApprovalWindowForImage(image: UIImage) {
-        let dateTaken = NSDate()
-        let fullImageViewController = FullImageViewController(image: image, forApproval: true)
-        fullImageViewController.approvalCallback = { newImage in
-            switch self.photoStore.addImage(newImage, dateTaken: dateTaken) {
-            case .Success():
-                self.photoCollection.reloadData()
-            case .Error(let error):
-                error.showAlertWithTitle("Error saving photo", parentViewController: self)
-            }
-        }
+        let fullImageViewController = FullImageViewController(imageForApproval: image, delegate: self)
         let navigationController = UINavigationController(rootViewController: fullImageViewController)
         navigationController.modalPresentationStyle = .FullScreen
         presentViewController(navigationController, animated: true, completion: nil)
@@ -170,12 +121,51 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
         }
     }
     
+    // MARK: FullImageController delegate
+    
+    func fullImageViewController(controller: FullImageViewController, amendedImage newImage: UIImage, atIndexPath indexPath: NSIndexPath?) {
+        // If indexPath is nil, we are calling it for approval. In which case, don't do anything, as we will handle it in the approvedImage delegate method.
+        // If indexPath is valid, we are updating an existing entry. So replace the image at the path with the new image provided.
+        if let path = indexPath {
+            self.photoStore.replaceImageAtIndex(UInt(path.item), withImage: newImage)
+            self.photoCollection.reloadItemsAtIndexPaths([path])
+        }
+    }
+    
+    func fullImageViewController(controller: FullImageViewController, approvedImage image: UIImage) {
+        let dateTaken = NSDate()
+        switch photoStore.addImage(image, dateTaken: dateTaken) {
+        case .Success():
+            photoCollection.reloadData()
+        case .Error(let error):
+            error.showAlertWithTitle("Error saving photo", parentViewController: self)
+        }
+    }
+    
+    func dismissedFullImageViewController(controller: FullImageViewController) {
+        controller.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    // MARK: StereogramViewController delegate
+    
+    func stereogramViewController(controller: StereogramViewController, createdStereogram stereogram: UIImage) {
+        controller.dismissViewControllerAnimated(true) {
+            // Once dismissed, trigger the full image view controller to examine the image.
+            controller.reset()
+            self.showApprovalWindowForImage(stereogram)
+        }
+    }
+    
+    func stereogramViewControllerWasCancelled(controller: StereogramViewController) {
+        controller.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
     // MARK: - Private data
 
     private var exportItem: UIBarButtonItem!, editItem: UIBarButtonItem!
     private let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .WhiteLarge)
     private var collectionViewThumbnailProvider: CollectionViewThumbnailProvider?
-    private var stereogramViewController: StereogramViewController?
+    private var stereogramViewController: StereogramViewController!
     
 
     // Creates the navigation buttons and adds them to the navigation controller. Called from the initializers as part of the setup process.
@@ -186,6 +176,14 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
         navigationItem.rightBarButtonItems = [takePhotoItem]
         navigationItem.leftBarButtonItems = [exportItem, editItem]
         self.editing = false
+    }
+    
+    // Sets the size of the thumbnails in the collection view.
+    private func setThumbnailSize(thumbnailSize size: CGSize) {
+        assert(photoCollection.collectionViewLayout.isKindOfClass(UICollectionViewFlowLayout.self), "Photo collection view layout is not a flow layout.")
+        let flowLayout = photoCollection.collectionViewLayout as UICollectionViewFlowLayout
+        flowLayout.itemSize = size
+        flowLayout.invalidateLayout()
     }
     
     private func formatDeleteMessage(numToDelete: UInt) -> String {
@@ -202,13 +200,15 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
             if !result.success { return }   // Stop on the first error, to avoid swamping the user with alerts.
         }
         
-        // Now deselect all the items once we have finished iterating over the list.
-        for indexPath in photoCollection.indexPathsForSelectedItems() as [NSIndexPath] {
-            photoCollection.deselectItemAtIndexPath(indexPath, animated: false)
-        }
+        // Now stop editing, which will deselect all the items.
+        setEditing(false, animated: true)
     }
     
-    private func resizeActivityIndicator() {
+    private func setupActivityIndicator() {
+        // Add the activity indicator to the view if it is not there already. It starts off hidden.
+        if !activityIndicator.isDescendantOfView(view) {
+            view.addSubview(activityIndicator)
+        }
         // Ensure the activity indicator fits in the frame.
         let activitySize = activityIndicator.bounds.size
         let parentSize = view.bounds.size
@@ -234,10 +234,12 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
         if indexPaths.count > 0 {
             let message = formatDeleteMessage(UInt(indexPaths.count))
             let alertController = UIAlertController(title: "Confirm deletion", message: message, preferredStyle: .Alert)
-            alertController.addAction(UIAlertAction(title: "Delete", style: UIAlertActionStyle.Destructive) { [unowned store = self.photoStore!] (action) in
+            alertController.addAction(UIAlertAction(title: "Delete", style: UIAlertActionStyle.Destructive) { (action) in
                 NSLog("Deleting images at index paths: \(indexPaths)")
-                let result = store.deleteImagesAtIndexPaths(indexPaths)
-                result.onError() { $0.showAlertWithTitle("Error deleting photos", parentViewController: self) }
+                self.photoStore.deleteImagesAtIndexPaths(indexPaths).onError() {
+                    $0.showAlertWithTitle("Error deleting photos", parentViewController: self)
+                }
+                self.setEditing(false, animated: true)
                 photoCollection.reloadData()
             })
             alertController.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil ))

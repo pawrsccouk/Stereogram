@@ -8,16 +8,31 @@
 
 import UIKit
 
+@objc protocol FullImageViewControllerDelegate {
+    
+    // Called if the controller is in Approval mode and the user has approved an image.
+    optional func fullImageViewController(controller: FullImageViewController, approvedImage image: UIImage)
+
+    // Called if the controller is viewing an image, and the image changed.
+    // This will be called in both approval mode and regular viewing mode
+    optional func fullImageViewController(controller: FullImageViewController, amendedImage newImage: UIImage, atIndexPath indexPath: NSIndexPath?)
+    
+    // Called when the user has requested the controller be closed. On receipt of this message, the delegagte must remove the view controller from the stack.
+    func dismissedFullImageViewController(controller: FullImageViewController)
+}
+
+
 class FullImageViewController: UIViewController, UIScrollViewDelegate {
 
-    // Initialise the image view to display the given image.
-    // If forApproval is YES, the view gets a 'Keep' button, and if pressed, calls approvalBlock
-    // which should copy the image to permanent storage.
     
     // MARK: Housekeeping
     
-    init(image: UIImage, forApproval: Bool) {
+    // Designated initialiser. image is the image to display. indexPath is the object where the image is stored (if any).
+    // If forApproval is YES, the view gets a 'Keep' button, and if pressed, calls the delegate's approvedImage function, which should copy the image to permanent storage.
+    init(image: UIImage, atIndexPath indexPath: NSIndexPath?, forApproval: Bool, delegate: FullImageViewControllerDelegate) {
         self.image = image
+        self.indexPath = indexPath
+        self.delegate = delegate
         super.init(nibName: "FullImageView", bundle: nil)
         let toggleViewMethodButtonItem = UIBarButtonItem(title: "Toggle View Method", style: .Bordered, target: self, action: "changeViewingMethod")
         // If we are using this to approve an image, then display "Keep" and "Discard" buttons.
@@ -30,7 +45,17 @@ class FullImageViewController: UIViewController, UIScrollViewDelegate {
             self.navigationItem.rightBarButtonItem = toggleViewMethodButtonItem
         }
     }
+    
+    // Convenience initialiser. Open in normal mode, viewing the index at the selected index path.
+    convenience init(image: UIImage, atIndexPath indexPath: NSIndexPath, delegate: FullImageViewControllerDelegate) {
+        self.init(image: image, atIndexPath: indexPath, forApproval: false, delegate: delegate)
+    }
 
+    // Convenience initialiser. Open in approval mode.
+    convenience init(imageForApproval: UIImage, delegate: FullImageViewControllerDelegate) {
+        self.init(image: imageForApproval, atIndexPath: nil, forApproval: true, delegate: delegate)
+    }
+    
     // We create this manually instead of storing it in a NIB file.
     // If we decide to allow this, I'll need to do the equivalent to init(image:, forApproval:) outside the class.
     required init(coder aDecoder: NSCoder) {
@@ -46,11 +71,7 @@ class FullImageViewController: UIViewController, UIScrollViewDelegate {
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
-        // Add the activity indicator to the view if it is not there already. It starts off hidden.
-        if !activityIndicator.isDescendantOfView(view) {
-            view.addSubview(activityIndicator)
-        }
-        resizeActivityIndicator()
+        setupActivityIndicator()
     }
     
     override func viewDidLayoutSubviews() {
@@ -61,21 +82,19 @@ class FullImageViewController: UIViewController, UIScrollViewDelegate {
     
     // MARK: User-configurable properties.
     
-    typealias ImageCallback = (UIImage) -> Void          // A callback that takes an image.
-    var imageUpdatedCallback: ImageCallback = { image in }  // Function to execute when the user updates an image we were tracking.
-    var approvalCallback: ImageCallback = { image in }      // Function to execute when the user approves this image. Should add it to the image collection.
-    var dismissCallback: (() -> Void)?                         // Function to execute when this controller has been dismissed.
-    
+    unowned var delegate: FullImageViewControllerDelegate
     
     // MARK: Callbacks for the buttons.
     
     func keepPhoto() {
-        approvalCallback(self.image)
-        presentingViewController!.dismissViewControllerAnimated(true, completion: dismissCallback)
+        delegate.fullImageViewController?(self, approvedImage: self.image)
+        delegate.dismissedFullImageViewController(self)
+        // presentingViewController!.dismissViewControllerAnimated(true, completion: dismissCallback)
     }
     
     func discardPhoto() {
-        presentingViewController!.dismissViewControllerAnimated(true, completion: dismissCallback)
+        delegate.dismissedFullImageViewController(self)
+        // presentingViewController!.dismissViewControllerAnimated(true, completion: dismissCallback)
     }
     
     // Toggle from cross-eye to wall-eye and back for the selected items.
@@ -93,8 +112,8 @@ class FullImageViewController: UIViewController, UIScrollViewDelegate {
                     self.image = newImage.value
                     imageView.image = newImage.value
                     imageView.sizeToFit()
-                    // If we were tracking an already-existing image, then notify the system that the image has updated.
-                    self.imageUpdatedCallback(newImage.value)
+                    // Notify the system that the image has been changed in the view.
+                    self.delegate.fullImageViewController?(self, amendedImage: newImage.value, atIndexPath: self.indexPath)
                 }
             case .Error(let error):
                 dispatch_async(dispatch_get_main_queue()) {
@@ -119,24 +138,27 @@ class FullImageViewController: UIViewController, UIScrollViewDelegate {
     // MARK: - Private Data
     
     private var image: UIImage
+    private var indexPath: NSIndexPath?
     private let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .WhiteLarge)
     
     private var showActivityIndicator: Bool {
         get { return !activityIndicator.hidden }
         set {
-            // TODO: Check the activity indicator still works.
             activityIndicator.hidden = !newValue
             if newValue {
-                // view.addSubview(activityIndicator)
                 activityIndicator.startAnimating()
             } else {
                 activityIndicator.stopAnimating()
-                // activityIndicator.removeFromSuperview()
             }
         }
     }
 
-    private func resizeActivityIndicator() {
+    private func setupActivityIndicator() {
+        // Add the activity indicator to the view if it is not there already. It starts off hidden.
+        if !activityIndicator.isDescendantOfView(view) {
+            view.addSubview(activityIndicator)
+        }
+
         // Ensure the activity indicator fits in the frame.
         let activitySize = activityIndicator.bounds.size
         let parentSize = view.bounds.size
