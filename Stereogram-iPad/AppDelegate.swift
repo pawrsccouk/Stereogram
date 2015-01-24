@@ -12,7 +12,8 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    var photoViewController = PhotoViewController()
+    //var photoViewController = PhotoViewController()
+    var photoStore: PhotoStore!
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
@@ -20,10 +21,37 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window = UIWindow(frame: UIScreen.mainScreen().bounds)
         
         if let w = window {
-            let navigationController = UINavigationController(rootViewController: photoViewController)
-            w.rootViewController = navigationController
             
-            w.backgroundColor = UIColor.whiteColor()
+            // Initialise the photo store, and capture any errors it returns.
+            var error: NSError?
+            photoStore = PhotoStore(error: &error)
+            if photoStore != nil {
+                
+                let photoViewController = PhotoViewController()
+                photoViewController.photoStore = photoStore
+                let navigationController = UINavigationController(rootViewController: photoViewController)
+                
+                // If photoStore is empty after creation, push a special view controller which doesn't have a collection view, but instead has some welcome text.
+                // When the user takes the first photo, pop that welcome view controller to reveal the standard collection view.
+                if photoStore.count == 0 {
+                    let welcomeViewController = WelcomeViewController()
+                    welcomeViewController.photoStore = photoStore
+                    navigationController.pushViewController(welcomeViewController, animated: false)
+                }
+                
+                w.rootViewController = navigationController
+                w.backgroundColor = UIColor.whiteColor()
+                
+            } else {
+                if error == nil {
+                    error = NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntCreateSharedStore.rawValue, userInfo: [NSLocalizedDescriptionKey : "Unknown error"])
+                }
+                let alertController = UIAlertController(title: "", message: error!.localizedDescription, preferredStyle: UIAlertControllerStyle.Alert)
+                alertController.addAction(UIAlertAction(title: "Exit", style: UIAlertActionStyle.Default) { action in
+                    fatalError("Error \(error) caused this application to terminate")
+                })
+                w.rootViewController = alertController
+            }
             w.makeKeyAndVisible()
         }
         return window != nil
@@ -37,7 +65,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(application: UIApplication) {
         NSLog("applicationDidEnterBackground:")
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.   If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-        if let photoStore = photoViewController.photoStore {
+        if let store = photoStore {
             var bgTask = UIBackgroundTaskInvalid
             bgTask = application.beginBackgroundTaskWithExpirationHandler {
                 // This handler is called if time runs out for the background task.
@@ -49,10 +77,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             // We have now created a task object with a handler to terminate it. Now create the task and run it in another thread.
             if bgTask != UIBackgroundTaskInvalid {
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
-                    photoStore.saveProperties().onError() { error in
+                    store.saveProperties().onError() { error in
                         // Can't send a message to the user here. Should I store this for when the app is restarted next time?
                         NSLog("Error saving the image property list. Error \(error), userInfo \(error.userInfo)")
                     }
+                    NSLog("Background task complete - Property data saved.")
                     application.endBackgroundTask(bgTask)
                     bgTask = UIBackgroundTaskInvalid
                 }

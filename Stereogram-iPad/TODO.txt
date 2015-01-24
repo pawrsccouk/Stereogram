@@ -1,8 +1,5 @@
 TODO for Stereogram
 
-Create a background for the photo collection view when it is empty.
-    This should explain how to use the app and give a welcome message.
-
 Check how apple handles collection editing, and do the same.
     In particular, does performing an operation on a collection un-set the editing flag?
     What feedback does the app give that an editing operation is in process?
@@ -16,7 +13,11 @@ Add the ability to crop on one image, and have the other image update to match i
 Allow users to take a photo by clicking on the camera screen.
 Separate the Take and Cancel button on the camera screen and make them more thumb-friendly.
 
+Technical changes:
+    Switch from updating images in viewDidLoad() to passing callbacks to dismissViewController:animated:callback()
+
 Add polish:
+    Create some welcome text to display for the WelcomeViewController.
     Create LaunchScreen.xib.
     Create new icons in all correct sizes.
     Look into builds and packaging options for App Store.

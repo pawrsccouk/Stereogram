@@ -29,6 +29,8 @@
 		57A1E6901A716B9700B97F60 /* CollectionViewThumbnailProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E68F1A716B9700B97F60 /* CollectionViewThumbnailProvider.swift */; };
 		57A1E6921A71713300B97F60 /* StereogramViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E6911A71713300B97F60 /* StereogramViewController.swift */; };
 		57B41CC71A738D500002FB5E /* PhotoView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57B41CC61A738D500002FB5E /* PhotoView.xib */; };
+		57B41CC91A739A760002FB5E /* WelcomeView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57B41CC81A739A760002FB5E /* WelcomeView.xib */; };
+		57B41CCB1A739ADD0002FB5E /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57B41CCA1A739ADD0002FB5E /* WelcomeViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,6 +71,8 @@
 		57A1E6911A71713300B97F60 /* StereogramViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StereogramViewController.swift; sourceTree = "<group>"; };
 		57A1E6931A73593600B97F60 /* TODO.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = TODO.txt; sourceTree = "<group>"; };
 		57B41CC61A738D500002FB5E /* PhotoView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PhotoView.xib; sourceTree = "<group>"; };
+		57B41CC81A739A760002FB5E /* WelcomeView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = WelcomeView.xib; sourceTree = "<group>"; };
+		57B41CCA1A739ADD0002FB5E /* WelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -178,6 +182,7 @@
 				57A1E6831A6C7F8200B97F60 /* FullImageView.xib */,
 				57B41CC61A738D500002FB5E /* PhotoView.xib */,
 				57A1E6771A67C2D500B97F60 /* ImageThumbnailCell.swift */,
+				57B41CC81A739A760002FB5E /* WelcomeView.xib */,
 			);
 			name = View;
 			sourceTree = "<group>";
@@ -185,6 +190,7 @@
 		57A1E6881A6C8AA600B97F60 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				57B41CCA1A739ADD0002FB5E /* WelcomeViewController.swift */,
 				57503BB11A62D3A000648FA1 /* PhotoViewController.swift */,
 				57A1E6911A71713300B97F60 /* StereogramViewController.swift */,
 				57A1E67D1A69CA1500B97F60 /* FullImageViewController.swift */,
@@ -275,6 +281,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				57A1E6861A6C7F8200B97F60 /* FullImageView.xib in Resources */,
+				57B41CC91A739A760002FB5E /* WelcomeView.xib in Resources */,
 				57A1E6851A6C7F8200B97F60 /* CameraOverlayView.xib in Resources */,
 				57B41CC71A738D500002FB5E /* PhotoView.xib in Resources */,
 				57503BBA1A62D3A000648FA1 /* LaunchScreen.xib in Resources */,
@@ -301,6 +308,7 @@
 				57503BB21A62D3A000648FA1 /* PhotoViewController.swift in Sources */,
 				57A1E6901A716B9700B97F60 /* CollectionViewThumbnailProvider.swift in Sources */,
 				57503BD01A62D42E00648FA1 /* PhotoStore.swift in Sources */,
+				57B41CCB1A739ADD0002FB5E /* WelcomeViewController.swift in Sources */,
 				57A1E6761A67C20A00B97F60 /* CameraOverlayViewController.swift in Sources */,
 				57503BD21A62D48700648FA1 /* Result.swift in Sources */,
 				57503BD91A630DF100648FA1 /* UIImage+RoundedCorner.swift in Sources */,

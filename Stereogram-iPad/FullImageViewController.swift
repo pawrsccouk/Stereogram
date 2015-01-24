@@ -64,17 +64,18 @@ class FullImageViewController: UIViewController, UIScrollViewDelegate {
     typealias ImageCallback = (UIImage) -> Void          // A callback that takes an image.
     var imageUpdatedCallback: ImageCallback = { image in }  // Function to execute when the user updates an image we were tracking.
     var approvalCallback: ImageCallback = { image in }      // Function to execute when the user approves this image. Should add it to the image collection.
+    var dismissCallback: (() -> Void)?                         // Function to execute when this controller has been dismissed.
     
     
     // MARK: Callbacks for the buttons.
     
     func keepPhoto() {
         approvalCallback(self.image)
-        presentingViewController!.dismissViewControllerAnimated(true, completion: nil)
+        presentingViewController!.dismissViewControllerAnimated(true, completion: dismissCallback)
     }
     
     func discardPhoto() {
-        presentingViewController!.dismissViewControllerAnimated(true, completion: nil)
+        presentingViewController!.dismissViewControllerAnimated(true, completion: dismissCallback)
     }
     
     // Toggle from cross-eye to wall-eye and back for the selected items.
@@ -98,7 +99,7 @@ class FullImageViewController: UIViewController, UIScrollViewDelegate {
             case .Error(let error):
                 dispatch_async(dispatch_get_main_queue()) {
                     self.showActivityIndicator = false
-                    error.showAlertWithTitle("Error changing viewing method.")
+                    error.showAlertWithTitle("Error changing viewing method.", parentViewController: self)
                 }
             }
         }

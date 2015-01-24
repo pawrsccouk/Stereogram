@@ -48,6 +48,8 @@ class StereogramViewController : NSObject, UIImagePickerControllerDelegate, UINa
         switch state {
         case .Ready, .Complete:
             
+            self.parentViewController = parentViewController
+            
             let pickerController = UIImagePickerController()
             pickerController.sourceType = .Camera
             pickerController.mediaTypes = [kUTTypeImage]  // This is the default.
@@ -101,7 +103,11 @@ class StereogramViewController : NSObject, UIImagePickerControllerDelegate, UINa
                         self.cameraOverlayController.showWaitIcon = false
                     }
                 case .Error(let error):
-                    error.showAlertWithTitle("Error creating the stereogram image")
+                    if let parent = self.parentViewController {
+                        error.showAlertWithTitle("Error creating the stereogram image", parentViewController: parent)
+                    } else {
+                        NSLog("Error \(error) returned from makeStereogram(), no parent controller to display it on.")
+                    }
                     self.state = .Ready
                 }
             }
@@ -145,7 +151,7 @@ class StereogramViewController : NSObject, UIImagePickerControllerDelegate, UINa
     
     private var state = State.Ready
     
-    
+    private weak var parentViewController: UIViewController!
     private let cameraOverlayController: CameraOverlayViewController
 
     // Get the edited photo from the info dictionary if the user has edited it. If there is no edited photo, get the original photo. If there is no original photo, terminate with an error.

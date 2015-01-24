@@ -41,7 +41,7 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
             photoStore = PhotoStore(error: &error)
             if photoStore == nil {
                 if let e = error {
-                    e.showAlertWithTitle("Error initialising the photo store")
+                    e.showAlertWithTitle("Error initialising the photo store", parentViewController: self)
                 }
                 fatalError("Failed to initialise the photo store with error \(error)")
             }
@@ -130,7 +130,7 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
             }
             navigationController?.pushViewController(fullImageViewController, animated: true)
         case .Error(let error):
-            error.showAlertWithTitle("Error accessing image at index path \(indexPath)")
+            error.showAlertWithTitle("Error accessing image at index path \(indexPath)", parentViewController: self)
         }
     }
     
@@ -143,8 +143,8 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
             switch self.photoStore.addImage(newImage, dateTaken: dateTaken) {
             case .Success():
                 self.photoCollection.reloadData()
-           case .Error(let error):
-                error.showAlertWithTitle("Error saving photo")
+            case .Error(let error):
+                error.showAlertWithTitle("Error saving photo", parentViewController: self)
             }
         }
         let navigationController = UINavigationController(rootViewController: fullImageViewController)
@@ -198,7 +198,7 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
     private func copyPhotosToCameraRoll(selectedIndexes: [NSIndexPath]) {
         for indexPath in selectedIndexes {
             let result = photoStore.copyImageToCameraRoll(UInt(indexPath.indexAtPosition(1)))
-            result.onError() { error in error.showAlertWithTitle("Error exporting to camera roll") }
+            result.onError() { error in error.showAlertWithTitle("Error exporting to camera roll", parentViewController: self) }
             if !result.success { return }   // Stop on the first error, to avoid swamping the user with alerts.
         }
         
@@ -237,7 +237,7 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate {
             alertController.addAction(UIAlertAction(title: "Delete", style: UIAlertActionStyle.Destructive) { [unowned store = self.photoStore!] (action) in
                 NSLog("Deleting images at index paths: \(indexPaths)")
                 let result = store.deleteImagesAtIndexPaths(indexPaths)
-                result.onError() { $0.showAlertWithTitle("Error deleting photos") }
+                result.onError() { $0.showAlertWithTitle("Error deleting photos", parentViewController: self) }
                 photoCollection.reloadData()
             })
             alertController.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil ))
