@@ -34,11 +34,11 @@ class FullImageViewController: UIViewController, UIScrollViewDelegate {
         self.indexPath = indexPath
         self.delegate = delegate
         super.init(nibName: "FullImageView", bundle: nil)
-        let toggleViewMethodButtonItem = UIBarButtonItem(title: "Toggle View Method", style: .Bordered, target: self, action: "changeViewingMethod")
+        let toggleViewMethodButtonItem = UIBarButtonItem(title: "Toggle View Method", style: .Plain, target: self, action: "changeViewingMethod")
         // If we are using this to approve an image, then display "Keep" and "Discard" buttons.
         if forApproval {
-            let keepButtonItem = UIBarButtonItem(title: "Keep", style: .Bordered, target: self, action: "keepPhoto")
-            let discardButtonItem = UIBarButtonItem(title: "Discard", style: .Bordered, target: self, action: "discardPhoto")
+            let keepButtonItem = UIBarButtonItem(title: "Keep", style: .Plain, target: self, action: "keepPhoto")
+            let discardButtonItem = UIBarButtonItem(title: "Discard", style: .Plain, target: self, action: "discardPhoto")
             self.navigationItem.rightBarButtonItems = [keepButtonItem, discardButtonItem]
             self.navigationItem.leftBarButtonItem = toggleViewMethodButtonItem
         } else {

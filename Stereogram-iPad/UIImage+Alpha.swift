@@ -42,7 +42,7 @@ extension UIImage {
         let newRect = CGRectMake(0, 0, image.size.width + borderSize * 2, image.size.height + borderSize * 2)
         
         // Build a context that's the same dimensions as the new size
-        let width = UInt(newRect.size.width), height = UInt(newRect.size.height)
+        let width = Int(newRect.size.width), height = Int(newRect.size.height)
         let bitmap = CGBitmapContextCreate(nil, width, height, CGImageGetBitsPerComponent(self.CGImage), 0, CGImageGetColorSpace(self.CGImage), CGImageGetBitmapInfo(self.CGImage))
         
         // Draw the image in the center of the context, leaving a gap around the edges
@@ -68,7 +68,7 @@ extension UIImage {
         // Build a context that's the same dimensions as the new size
         let colorSpace = CGColorSpaceCreateDeviceGray()
         let bitmapInfo = CGBitmapInfo(rawValue: CGBitmapInfo.ByteOrderDefault.rawValue | CGImageAlphaInfo.None.rawValue)
-        let width = UInt(size.width), height = UInt(size.height)
+        let width = Int(size.width), height = Int(size.height)
         let maskContext = CGBitmapContextCreate(nil, width, height, 8 /* 8-bit grayscale*/, 0, colorSpace, bitmapInfo)
         
         // Start with a mask that's entirely transparent

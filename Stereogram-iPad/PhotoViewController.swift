@@ -19,14 +19,14 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
         stereogramViewController = StereogramViewController(delegate: self)
     }
     
-    convenience override init() {
-        self.init(nibName: nil, bundle: nil)
-    }
+//    convenience override init() {
+//        self.init(nibName: nil, bundle: nil)
+//    }
 
     // View controllers are created manually for this project. This should never be called.
     required init(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-        stereogramViewController = StereogramViewController(delegate: self)
+//        stereogramViewController = StereogramViewController(delegate: self)
     }
 
     
@@ -56,8 +56,8 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
     override func setEditing(editing: Bool, animated: Bool) {
         super.setEditing(editing, animated: animated)
         // Clear the selected ticks once we stop editing the photo collection.
-        if !editing {
-            for indexPath in photoCollection.indexPathsForSelectedItems() as [NSIndexPath] {
+        if !self.editing, let pathArray = photoCollection.indexPathsForSelectedItems() as? [NSIndexPath] {
+            for indexPath in pathArray {
                 photoCollection.deselectItemAtIndexPath(indexPath, animated: animated)
             }
         }
@@ -78,7 +78,7 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
             self.deletePhotos(self.photoCollection)
         })
         alertController.addAction(UIAlertAction(title: "Copy to gallery", style: .Default) { [unowned self] (action) in
-            self.copyPhotosToCameraRoll(self.photoCollection.indexPathsForSelectedItems() as [NSIndexPath])
+            self.copyPhotosToCameraRoll(self.photoCollection.indexPathsForSelectedItems() as! [NSIndexPath])
         })
         alertController.popoverPresentationController!.barButtonItem = exportItem
         self.presentViewController(alertController, animated: true, completion: nil)
@@ -181,9 +181,10 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
     // Sets the size of the thumbnails in the collection view.
     private func setThumbnailSize(thumbnailSize size: CGSize) {
         assert(photoCollection.collectionViewLayout.isKindOfClass(UICollectionViewFlowLayout.self), "Photo collection view layout is not a flow layout.")
-        let flowLayout = photoCollection.collectionViewLayout as UICollectionViewFlowLayout
-        flowLayout.itemSize = size
-        flowLayout.invalidateLayout()
+        if let flowLayout = photoCollection.collectionViewLayout as? UICollectionViewFlowLayout {
+            flowLayout.itemSize = size
+            flowLayout.invalidateLayout()
+        }
     }
     
     private func formatDeleteMessage(numToDelete: UInt) -> String {
@@ -230,7 +231,7 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
     
     
     private func deletePhotos(photoCollection: UICollectionView) {
-        let indexPaths = photoCollection.indexPathsForSelectedItems() as [NSIndexPath]
+        let indexPaths = photoCollection.indexPathsForSelectedItems() as! [NSIndexPath]
         if indexPaths.count > 0 {
             let message = formatDeleteMessage(UInt(indexPaths.count))
             let alertController = UIAlertController(title: "Confirm deletion", message: message, preferredStyle: .Alert)

@@ -172,16 +172,16 @@ public class PhotoStore {
         return and(loadImageProperties(propertiesFilePath), loadImageFilenames(photoFolderPath)).map { (tuple) -> ResultOf<MasterPropertyDict> in
             var (allProperties, filesystemFilenames) = tuple
             let allFilenames: [FileName] = allProperties.keys.array
-            let propertyFilenames = Set<FileName>(array: allFilenames)
+            let propertyFilenames = Set<FileName>(allFilenames)
             
             // Remove entries in propertyFilenames which are not in the file system.
-            let filesToRemove = propertyFilenames.filter {  !filesystemFilenames.contains($0) }
+            let filesToRemove = propertyFilenames.subtract(filesystemFilenames)
             for file in filesToRemove {
                 allProperties[file] = nil
             }
             
             // Add any entries in the filesystem which are not in the property list.
-            let filesToAdd = filesystemFilenames.filter { !propertyFilenames.contains($0) }
+            let filesToAdd = filesystemFilenames.subtract(propertyFilenames)
             for file in filesToAdd {
                 allProperties[file] = PropertyDict()
             }
@@ -255,8 +255,8 @@ public class PhotoStore {
 
     // Return a filename which should not already be used. I do this by creating a GUID for the name part.
     private func getUniqueFilename(photoDir: String) -> String {
-        let newUIDString = CFUUIDCreateString(kCFAllocatorDefault, CFUUIDCreate(kCFAllocatorDefault))
-        var filePath = photoDir.stringByAppendingPathComponent(newUIDString).stringByAppendingString(".jpg")
+        let newUIDString: NSString = CFUUIDCreateString(kCFAllocatorDefault, CFUUIDCreate(kCFAllocatorDefault))
+        var filePath = photoDir.stringByAppendingPathComponent(newUIDString as String).stringByAppendingString(".jpg")
         assert(!fileManager.fileExistsAtPath(filePath)) // Name should be unique so no photo should exist yet.
         return filePath
     }
@@ -280,15 +280,15 @@ public class PhotoStore {
             var result = [FileName : PropertyDict]()
             for (key, subDict) in dict {
                 var subResult = PropertyDict()
-                for (subKey, subValue) in (subDict as NSDictionary) {
-                    if let propertyKey = PropertyKey(rawValue: subKey as String) {
+                for (subKey, subValue) in (subDict as! NSDictionary) {
+                    if let propertyKey = PropertyKey(rawValue: subKey as! String) {
                         subResult[propertyKey] = subValue
                     } else {
                         let errorMessage = "The string [\(subKey)] is not a valid property list key"
                         return .Error(NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntLoadImageProperties.rawValue, userInfo: [NSLocalizedDescriptionKey : errorMessage]))
                     }
                 }
-                result[key as FileName] = subResult
+                result[key as! FileName] = subResult
             }
             return ResultOf(result)
         }
@@ -302,7 +302,7 @@ public class PhotoStore {
         var error: NSError?
         if let fileNames = fileManager.contentsOfDirectoryAtPath(folderPath, error: &error) as? [String] {
             let fullNames = fileNames.map { folderPath.stringByAppendingPathComponent($0) }
-            return ResultOf(FilenameSet(array: fullNames))
+            return ResultOf(FilenameSet(fullNames))
         } else {
             if error == nil {
                 let userInfo = [NSLocalizedDescriptionKey : "Unknown error reading directory [\(folderPath)]"]

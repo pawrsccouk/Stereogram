@@ -36,7 +36,7 @@ class CollectionViewThumbnailProvider : NSObject, UICollectionViewDataSource, UI
     }
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(ImageThumbnailCellId, forIndexPath: indexPath) as ImageThumbnailCell
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(ImageThumbnailCellId, forIndexPath: indexPath) as! ImageThumbnailCell
         switch photoStore.thumbnailAtIndex(UInt(indexPath.item)) {
         case .Success(let image):
             cell.image = image.value

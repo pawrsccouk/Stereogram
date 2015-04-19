@@ -186,7 +186,7 @@ class StereogramViewController : NSObject, UIImagePickerControllerDelegate, UINa
         if let photo = infoDict[UIImagePickerControllerEditedImage] as? UIImage {
             return photo
         }
-        return infoDict[UIImagePickerControllerOriginalImage] as UIImage
+        return infoDict[UIImagePickerControllerOriginalImage] as! UIImage
     }
     
 }

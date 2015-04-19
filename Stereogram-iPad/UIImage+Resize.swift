@@ -116,7 +116,7 @@ extension UIImage {
         
         // Build a context that's the same dimensions as the new size
         //let data = UnsafeMutablePointer<Void>()
-        let width = UInt(newRect.size.width), height = UInt(newRect.size.height), bitsPerComponent: UInt = CGImageGetBitsPerComponent(imageRef), bytesPerRow: UInt = 0
+        let width = Int(newRect.size.width), height = Int(newRect.size.height), bitsPerComponent = Int(CGImageGetBitsPerComponent(imageRef)), bytesPerRow: Int = 0
         let bitmap = CGBitmapContextCreate(nil, width, height, bitsPerComponent, bytesPerRow, CGImageGetColorSpace(imageRef), CGImageGetBitmapInfo(imageRef))
         
         CGContextConcatCTM(bitmap, transform)                                          // Rotate and/or flip the image if required by its orientation

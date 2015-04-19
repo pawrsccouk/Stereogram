@@ -14,7 +14,7 @@ extension UIImage {
         let image = self.imageWithAlpha()
         
         // Build a context that's the same dimensions as the new size
-        let width = UInt(image.size.width), height = UInt(image.size.height)
+        let width = Int(image.size.width), height = Int(image.size.height)
         let context = CGBitmapContextCreate(nil, width, height, CGImageGetBitsPerComponent(image.CGImage), 0, CGImageGetColorSpace(image.CGImage), CGImageGetBitmapInfo(image.CGImage))
         
         // Create a clipping path with rounded corners

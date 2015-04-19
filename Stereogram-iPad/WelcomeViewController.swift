@@ -24,13 +24,13 @@ class WelcomeViewController : UIViewController, FullImageViewControllerDelegate,
         stereogramViewController = StereogramViewController(delegate: self)
     }
 
-    convenience override init() {
-        self.init(nibName: nil, bundle: nil)
-    }
+//    convenience override init() {
+//        self.init(nibName: nil, bundle: nil)
+//    }
     
     required init(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-        stereogramViewController = StereogramViewController(delegate: self)
+//        stereogramViewController = StereogramViewController(delegate: self)
     }
     
     // MARK: Overrides
