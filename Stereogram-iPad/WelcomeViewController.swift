@@ -8,29 +8,34 @@
 
 import UIKit
 
-// This class manages a welcome view, which is currently an HTML View, which will display friendly information to the new user.
-// It has its own stereogram view controller, which it uses to present the camera for the first photo.
-// Once it determines we have at least one image to display, it requests it's parent navigation controller to dismiss itself. This should leave the photo collection view as the only view displayed.
+/// This class manages a welcome view, which is currently an HTML View, which will display friendly information to the new user.
+/// It has its own stereogram view controller, which it uses to present the camera for the first photo.
+///
+/// Once it determines we have at least one image to display, it requests it's parent navigation controller to dismiss itself. This should leave the photo collection view as the only view displayed.
 
 class WelcomeViewController : UIViewController, FullImageViewControllerDelegate, StereogramViewControllerDelegate {
+    
+    /// Interface Builder outlet - Show a web view with some welcome text on it.
     @IBOutlet weak var webView: UIWebView!
     
-    var photoStore: PhotoStore!
+    /// The collection of stereograms.
+    private let _photoStore: PhotoStore
     
     // MARK: Initialisers
     
-    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
-        super.init(nibName: "WelcomeView", bundle: nibBundleOrNil)
-        stereogramViewController = StereogramViewController(delegate: self)
+    /// Initialise with a photo store.
+    /// Designated initializer
+    ///
+    /// :param: photoStore - The photo store to work with.
+    init(photoStore: PhotoStore) {
+        self._photoStore = photoStore
+        stereogramViewController = StereogramViewController(photoStore: photoStore)
+        super.init(nibName: "WelcomeView", bundle: nil)
+        stereogramViewController.delegate = self
     }
-
-//    convenience override init() {
-//        self.init(nibName: nil, bundle: nil)
-//    }
     
     required init(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-//        stereogramViewController = StereogramViewController(delegate: self)
     }
     
     // MARK: Overrides
@@ -49,25 +54,32 @@ class WelcomeViewController : UIViewController, FullImageViewControllerDelegate,
     
     // MARK: - Callbacks
     
+    /// Trigger the camera view controller to allow the user to start taking photos.
     func takePicture() {
         stereogramViewController.takePicture(self)
     }
 
     // MARK: FullImageController delegate
     
-    func fullImageViewController(controller: FullImageViewController, approvedImage image: UIImage) {
-        // Add the image to the store if the user has approved it.
-        let dateTaken = NSDate()
-        photoStore.addImage(image, dateTaken: dateTaken).onError { error in
-            error.showAlertWithTitle("Error saving photo", parentViewController: self)
-        }
+    
+    func fullImageViewController(controller: FullImageViewController
+        ,    approvingStereogram stereogram: Stereogram
+        ,                            result: ApprovalResult) {
+            if result == .Discarded {
+                switch _photoStore.deleteStereogram(stereogram) {
+                case .Error(let error):
+                    error.showAlertWithTitle("Error removing photo", parentViewController: self)
+                default:
+                    break
+                }
+            }
     }
     
     func dismissedFullImageViewController(controller: FullImageViewController) {
         // Remove the controller from the stack.
         controller.dismissViewControllerAnimated(false) { [p = self.navigationController!] in
             // Once the FullImageViewController is dismissed, check if we have now got some photos to display. If so, dismiss the welcome controller to reveal the photo controller, which should be the at the root of the controller hierarchy.
-            if self.photoStore.count > 0 {
+            if self._photoStore.count > 0 {
                 p.popToRootViewControllerAnimated(true)
             }
         }
@@ -75,11 +87,12 @@ class WelcomeViewController : UIViewController, FullImageViewControllerDelegate,
     
     // MARK: StereogramViewController delegate
     
-    func stereogramViewController(controller: StereogramViewController, createdStereogram stereogram: UIImage) {
+    func stereogramViewController(controller: StereogramViewController
+        ,       createdStereogram stereogram: Stereogram) {
         controller.reset()
         controller.dismissViewControllerAnimated(false) {
             // Once the stereogram view has disappeared, display the FullImage view to allow the user to keep or reject the requested image.
-            self.showApprovalWindowForImage(stereogram)
+            self.showApprovalWindowForStereogram(stereogram)
         }
     }
     
@@ -90,13 +103,14 @@ class WelcomeViewController : UIViewController, FullImageViewControllerDelegate,
     // MARK: - Private Data
     
     private let welcomeHTML = "<HTML><HEAD/><BODY><P>Welcome to Stereogram</P></BODY><HTML>"
-    private var stereogramViewController: StereogramViewController!
+    private let stereogramViewController: StereogramViewController
     
     // Called to present the image to the user, with options to accept or reject it.
     // If the user accepts, the photo is added to the photo store.
-    private func showApprovalWindowForImage(image: UIImage) {
+    private func showApprovalWindowForStereogram(stereogram: Stereogram) {
         let dateTaken = NSDate()
-        let fullImageViewController = FullImageViewController(imageForApproval: image, delegate: self)
+        let fullImageViewController = FullImageViewController(stereogramForApproval: stereogram
+            ,                                                              delegate: self)
         
         let navigationController = UINavigationController(rootViewController: fullImageViewController)
         navigationController.modalPresentationStyle = .FullScreen

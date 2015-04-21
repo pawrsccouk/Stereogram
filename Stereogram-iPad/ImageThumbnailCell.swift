@@ -8,8 +8,8 @@
 
 import UIKit
 
+/// A collection view cell designed to show thumbnail images and overlay a tick if the cell is selected.
 class ImageThumbnailCell: UICollectionViewCell {
-
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -26,7 +26,7 @@ class ImageThumbnailCell: UICollectionViewCell {
         selOverlayFrame.origin = selImageOrigin
         selOverlayFrame.size = selImageSize
         let sv = UIImageView(frame: selOverlayFrame)
-        sv.image = unselectedImage
+        //sv.image = ImageThumbnailCell.unselectedImage
         contentView.addSubview(sv)
         selectionOverlayView = sv
     }
@@ -39,31 +39,36 @@ class ImageThumbnailCell: UICollectionViewCell {
     weak var imageView: UIImageView!
     weak var selectionOverlayView: UIImageView!
     
-    // Image which will be displayed in the collection view.
+    /// Image which will be displayed in the collection view.
     var image: UIImage = UIImage() {
         didSet {
             imageView.image = self.image
         }
     }
     
-    // Size of the selected overlay image.
+    /// Size of the selected overlay image.
     private let selectedImageSize = CGSizeMake(46, 46)
     
+    // Override the description to return the image view and selection state.
     override var description:  String {
         let superDesc = super.description
-        return "\(superDesc): imageView=\(imageView)"
+        return "\(superDesc): <imageView=\(imageView), selected=\(selected)>"
     }
     
     // Track when the cell becomes selected or not, and update the image to show this.
     override var selected: Bool {
         didSet {
-            selectionOverlayView.image = selected ? selectedImage : unselectedImage
+            selectionOverlayView.image = selected ? ImageThumbnailCell.selectedImage : nil //ImageThumbnailCell.unselectedImage
         }
     }
     
+    // Images which are overlaid on the thumbnail to indicate if it is selected or not.
+    
+    /// Image shown when the cell is selected.
+    private static let selectedImage   = UIImage(named: "Tick")
+    
+    /// Image shown when the cell is not selected.
+    //private static let unselectedImage = UIImage(named: "Unselected Overlay")
 }
 
-// Images which are overlaid on the thumbnail to indicate if it is selected or not.
-// Should be class methods, but these are not yet supported.
-private /*class*/ var selectedImage   = UIImage(named: "Tick")
-private /*class*/ var unselectedImage = UIImage(named: "Unselected Overlay")
+

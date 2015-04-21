@@ -17,6 +17,7 @@
 		57503BD51A62EACD00648FA1 /* UIImage+Resize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BD41A62EACD00648FA1 /* UIImage+Resize.swift */; };
 		57503BD71A63001D00648FA1 /* UIImage+Alpha.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BD61A63001D00648FA1 /* UIImage+Alpha.swift */; };
 		57503BD91A630DF100648FA1 /* UIImage+RoundedCorner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BD81A630DF100648FA1 /* UIImage+RoundedCorner.swift */; };
+		579DA0D31AE4159D0079DC8C /* Stereogram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579DA0D21AE4159D0079DC8C /* Stereogram.swift */; };
 		57A1E6761A67C20A00B97F60 /* CameraOverlayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E6751A67C20A00B97F60 /* CameraOverlayViewController.swift */; };
 		57A1E6781A67C2D500B97F60 /* ImageThumbnailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E6771A67C2D500B97F60 /* ImageThumbnailCell.swift */; };
 		57A1E67C1A69C84800B97F60 /* NSError+Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E67B1A69C84800B97F60 /* NSError+Alert.swift */; };
@@ -57,6 +58,7 @@
 		57503BD41A62EACD00648FA1 /* UIImage+Resize.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+Resize.swift"; sourceTree = "<group>"; };
 		57503BD61A63001D00648FA1 /* UIImage+Alpha.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+Alpha.swift"; sourceTree = "<group>"; };
 		57503BD81A630DF100648FA1 /* UIImage+RoundedCorner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+RoundedCorner.swift"; sourceTree = "<group>"; };
+		579DA0D21AE4159D0079DC8C /* Stereogram.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stereogram.swift; sourceTree = "<group>"; };
 		57A1E6751A67C20A00B97F60 /* CameraOverlayViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraOverlayViewController.swift; sourceTree = "<group>"; };
 		57A1E6771A67C2D500B97F60 /* ImageThumbnailCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageThumbnailCell.swift; sourceTree = "<group>"; };
 		57A1E67B1A69C84800B97F60 /* NSError+Alert.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSError+Alert.swift"; sourceTree = "<group>"; };
@@ -158,6 +160,7 @@
 				57503BCF1A62D42E00648FA1 /* PhotoStore.swift */,
 				57A1E68B1A6F3BCC00B97F60 /* ThumbnailCache.swift */,
 				57A1E68D1A6F3F8200B97F60 /* ImageManager.swift */,
+				579DA0D21AE4159D0079DC8C /* Stereogram.swift */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -303,6 +306,7 @@
 				57A1E68C1A6F3BCC00B97F60 /* ThumbnailCache.swift in Sources */,
 				57A1E6921A71713300B97F60 /* StereogramViewController.swift in Sources */,
 				57503BB21A62D3A000648FA1 /* PhotoViewController.swift in Sources */,
+				579DA0D31AE4159D0079DC8C /* Stereogram.swift in Sources */,
 				57A1E6901A716B9700B97F60 /* CollectionViewThumbnailProvider.swift in Sources */,
 				57503BD01A62D42E00648FA1 /* PhotoStore.swift in Sources */,
 				57B41CCB1A739ADD0002FB5E /* WelcomeViewController.swift in Sources */,

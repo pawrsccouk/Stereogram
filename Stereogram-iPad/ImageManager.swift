@@ -10,9 +10,13 @@ import UIKit
 
 private let defaultError = NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.UnknownError.rawValue, userInfo: [NSLocalizedDescriptionKey : "Unknown Error"])
 
+/// A collection of functions for handling images.
 class ImageManager {
     
-    // Load an image from the file path specified.
+    /// Load an image from the disk
+    /// 
+    /// :param: filePath - Path to the image on disk.
+    /// :returns: A UIImage object on success or an error object on failure
     class func imageFromFile(filePath: String) -> ResultOf<UIImage> {
         var error: NSError?
         let data = NSData(contentsOfFile:filePath, options:.allZeros, error:&error)
@@ -28,7 +32,11 @@ class ImageManager {
         return ResultOf(img!)
     }
     
-    // Compose the two photos given to make a stereogram.
+    /// Compose two photos to make a stereogram.
+    ///
+    /// :param: leftPhoto - The left image.
+    /// :param: rightPhoto - The right image.
+    /// :returns: A UIImage on success or an NSError on failure.
     class func makeStereogramWithLeftPhoto(leftPhoto: UIImage, rightPhoto: UIImage) -> ResultOf<UIImage> {
         assert(leftPhoto.scale == rightPhoto.scale, "Image scales \(leftPhoto.scale) and \(rightPhoto.scale) must be the same.")
         let stereogramSize = CGSizeMake(leftPhoto.size.width + rightPhoto.size.width, max(leftPhoto.size.height, rightPhoto.size.height))
@@ -48,7 +56,12 @@ class ImageManager {
         return .Error(NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntCreateStereogram.rawValue, userInfo: nil))
     }
     
-    // Returns a copy of the specifed image with the viewing method swapped. The viewing method can be crosseye or walleye.
+    /// Returns a copy of the specifed image with the viewing method swapped.
+    ///
+    /// :param: image The image to swap.
+    /// :returns: The new image on success, or an NSError object on failure.
+    ///
+    /// Note that this only works by chopping the image in half and rearranging the halves.
     class func changeViewingMethod(image: UIImage) -> ResultOf<UIImage> {
         return and( self.getHalfOfImage(image, whichHalf: .LeftHalf),
                     self.getHalfOfImage(image, whichHalf: .RightHalf) )
@@ -56,8 +69,18 @@ class ImageManager {
                 return ImageManager.makeStereogramWithLeftPhoto(rightImage, rightPhoto: leftImage) } )
     }
 
-    // Function to return half an image.
-    enum WhichHalf { case RightHalf, LeftHalf }
+    /// Enum to describe which half of an image to retrieve.
+    ///
+    /// - RightHalf: The right half of the image
+    /// - LeftHalf: The left half of the image
+    enum WhichHalf {
+        case RightHalf, LeftHalf
+    }
+    
+    /// Function to return half an image.
+    ///
+    /// :param: image - The image to split
+    /// :returns: A UIImage on success or an NSError object on failure.
     class func getHalfOfImage(image: UIImage,  whichHalf: WhichHalf) -> ResultOf<UIImage> {
         let rectToKeep = (whichHalf == .LeftHalf)
             ? CGRectMake(0, 0, image.size.width / 2.0, image.size.height)

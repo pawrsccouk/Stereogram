@@ -28,6 +28,14 @@ public enum Result {
         case .Error: return false
         }
     }
+    
+    // Returns the error if we were in an error state, or nil otherwise.
+    var error: NSError? {
+        switch self {
+        case .Error(let e): return e
+        default: return nil
+        }
+    }
 
     // Performs the function fn on this object, if it has a valid value.
     // If not, just propagates the error.
@@ -80,7 +88,15 @@ public enum ResultOf<T> {
         case .Error: return false
         }
     }
- 
+    
+    // Returns the error if we were in an error state, or nil otherwise.
+    var error: NSError? {
+        switch self {
+        case .Error(let e): return e
+        default: return nil
+        }
+    }
+
 
     // Performs the function fn on this object, if it has a valid value.
     // If not, just propagates the error.
@@ -146,5 +162,16 @@ public func and<T,U>(r1: ResultOf<T>, r2: ResultOf<U>) -> ResultOf<(T,U)> {
         case .Error(let e): return .Error(e)
         }
     case .Error(let e): return .Error(e)
+    }
+}
+
+/// Return success only if r1 and r2 both succeed. Otherwise return the first value that failed.
+public func and(r1: Result, r2: Result) -> Result {
+    if !r1.success {
+        return r1
+    } else if !r2.success {
+        return r2
+    } else {
+        return .Success()
     }
 }

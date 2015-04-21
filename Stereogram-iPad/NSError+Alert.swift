@@ -24,5 +24,16 @@ extension NSError {
         alertController.addAction(UIAlertAction(title: "Close", style: .Default, handler: nil))
         parent.presentViewController(alertController, animated: true, completion: nil)
     }
+    
+    /// Create a new error object using our typedefs.
+    convenience init(errorDomain domain: ErrorDomain, errorCode code: ErrorCode, userInfo:[String : AnyObject]?) {
+        self.init(domain:domain.rawValue, code:code.rawValue, userInfo:userInfo)
+    }
+
+    class func unknownError(location: String) -> NSError {
+        let userInfo = [NSLocalizedDescriptionKey : location];
+        return NSError(errorDomain:.PhotoStore, errorCode:.UnknownError, userInfo:userInfo)
+    }
+    
 }
 

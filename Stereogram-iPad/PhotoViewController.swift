@@ -8,36 +8,40 @@
 
 import UIKit
 
+/// A view controller which manages a view displaying a collection of sterogram images and presents a menu allowing users to modify or delete them.
+
 class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImageViewControllerDelegate, StereogramViewControllerDelegate {
+
+    /// Reference to the collection this view controller manages.
 
     @IBOutlet weak var photoCollection: UICollectionView!
 
-    var photoStore: PhotoStore!
-
-    override init(nibName: String?, bundle: NSBundle?) {
-        super.init(nibName: "PhotoView", bundle: bundle)
-        stereogramViewController = StereogramViewController(delegate: self)
-    }
+    // MARK: Constructors
     
-//    convenience override init() {
-//        self.init(nibName: nil, bundle: nil)
-//    }
+    /// Initialize with a photo store.
+    ///
+    /// :param: photoStore - The photo store to display.
+    
+    init(photoStore: PhotoStore) {
+        _photoStore = photoStore
+        _stereogramViewController = StereogramViewController(photoStore: photoStore)
+        super.init(nibName: "PhotoView", bundle: nil)
+        _stereogramViewController.delegate = self
+    }
 
     // View controllers are created manually for this project. This should never be called.
     required init(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-//        stereogramViewController = StereogramViewController(delegate: self)
     }
 
+    // MARK: Overrides
     
-    // Do any additional setup after loading the view, typically from a nib.
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Connect up the thumbnail provider as data source to the collection view.
-        if collectionViewThumbnailProvider == nil {
-            collectionViewThumbnailProvider = CollectionViewThumbnailProvider(photoStore: photoStore, photoCollection: photoCollection)
-            photoCollection.dataSource = collectionViewThumbnailProvider
+        if _collectionViewThumbnailProvider == nil {
+            _collectionViewThumbnailProvider = CollectionViewThumbnailProvider(photoStore: _photoStore, photoCollection: photoCollection)
         }
         
         setupNavigationButtons()
@@ -45,7 +49,10 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
         photoCollection.allowsMultipleSelection = true
         
         // Set the thumbnail size from the store
-        setThumbnailSize(thumbnailSize: thumbnailSize)
+        if let flowLayout = photoCollection.collectionViewLayout as? UICollectionViewFlowLayout {
+            flowLayout.itemSize = thumbnailSize
+            flowLayout.invalidateLayout()
+        }
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -65,11 +72,15 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
     
 
 
-    // MARK: - Callbacks
+    // MARK: Callbacks
+    
+    /// Trigger the stereogram view controller and start the picture-taking process.
     
     func takePicture() {
-        stereogramViewController.takePicture(self)
+        _stereogramViewController.takePicture(self)
     }
+    
+    /// Present a menu of possible actions for the selected stereograms.
     
     func actionMenu() {
         let alertController = UIAlertController(title: "Select an action", message: "", preferredStyle: UIAlertControllerStyle.ActionSheet)
@@ -80,24 +91,26 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
         alertController.addAction(UIAlertAction(title: "Copy to gallery", style: .Default) { [unowned self] (action) in
             self.copyPhotosToCameraRoll(self.photoCollection.indexPathsForSelectedItems() as! [NSIndexPath])
         })
-        alertController.popoverPresentationController!.barButtonItem = exportItem
+        alertController.popoverPresentationController!.barButtonItem = _exportItem
         self.presentViewController(alertController, animated: true, completion: nil)
     }
     
-    // Present an image view showing the image at the given index path.
-    func showImageAtIndexPath(indexPath: NSIndexPath) {
-        switch photoStore.imageAtIndex(UInt(indexPath.item)) {
-        case .Success(let image):
-            let fullImageViewController = FullImageViewController(image: image.value, atIndexPath: indexPath, delegate: self)
-            navigationController!.pushViewController(fullImageViewController, animated: true)
-        case .Error(let error):
-            error.showAlertWithTitle("Error accessing image at index path \(indexPath)", parentViewController: self)
-        }
+    /// Present an image view showing a given stereogram.
+    ///
+    /// :param: indexPath - The index path of the sterogram in the current photo collection.
+    
+    func showStereogramAtIndexPath(indexPath: NSIndexPath) {
+        let stereogram = _photoStore.stereogramAtIndex(indexPath.item)
+        let fullImageController = FullImageViewController(stereogram: stereogram, atIndexPath: indexPath, delegate: self)
+        navigationController?.pushViewController(fullImageController, animated: true)
     }
     
-    // Called to present the image to the user, with options to accept or reject it.
-    func showApprovalWindowForImage(image: UIImage) {
-        let fullImageViewController = FullImageViewController(imageForApproval: image, delegate: self)
+    /// Called to present a stereogram to the user and give them options to accept or reject it.
+    ///
+    /// :param: stereogram - The stereogram to display.
+
+    func showApprovalWindowForStereogram(stereogram: Stereogram) {
+        let fullImageViewController = FullImageViewController(stereogramForApproval: stereogram, delegate: self)
         let navigationController = UINavigationController(rootViewController: fullImageViewController)
         navigationController.modalPresentationStyle = .FullScreen
         presentViewController(navigationController, animated: true, completion: nil)
@@ -110,36 +123,41 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
             // In viewing mode, we need to revert this status-flag update, and then pop the full-image view onto the navigation stack.
         if !editing {
             collectionView.deselectItemAtIndexPath(indexPath, animated: false)
-            showImageAtIndexPath(indexPath)
+            showStereogramAtIndexPath(indexPath)
         }
     }
     
     func collectionView(collectionView: UICollectionView, didDeselectItemAtIndexPath indexPath: NSIndexPath) {
         // If we are in viewing mode, then any click on a thumbnail -to select or deselect- we translate into a request to show the full-image view.
         if !editing {
-            showImageAtIndexPath(indexPath)
+            showStereogramAtIndexPath(indexPath)
         }
     }
     
     // MARK: FullImageController delegate
     
-    func fullImageViewController(controller: FullImageViewController, amendedImage newImage: UIImage, atIndexPath indexPath: NSIndexPath?) {
-        // If indexPath is nil, we are calling it for approval. In which case, don't do anything, as we will handle it in the approvedImage delegate method.
-        // If indexPath is valid, we are updating an existing entry. So replace the image at the path with the new image provided.
-        if let path = indexPath {
-            self.photoStore.replaceImageAtIndex(UInt(path.item), withImage: newImage)
-            self.photoCollection.reloadItemsAtIndexPaths([path])
-        }
+    func fullImageViewController(controller: FullImageViewController
+        ,   amendedStereogram newStereogram: Stereogram
+        ,             atIndexPath indexPath: NSIndexPath?) {
+            // If indexPath is nil, we are calling it for approval. In which case, don't do anything, as we will handle it in the approvedImage delegate method.  If indexPath is valid, we are updating an existing entry. So replace the image at the path with the new image provided.
+            if let path = indexPath {
+                self._photoStore.replaceStereogramAtIndex(path.item, withStereogram: newStereogram)
+                self.photoCollection.reloadItemsAtIndexPaths([path])
+            }
     }
     
-    func fullImageViewController(controller: FullImageViewController, approvedImage image: UIImage) {
-        let dateTaken = NSDate()
-        switch photoStore.addImage(image, dateTaken: dateTaken) {
-        case .Success():
+    func fullImageViewController(controller: FullImageViewController
+        ,    approvingStereogram stereogram: Stereogram
+        ,                            result: ApprovalResult) {
+            if result == .Discarded {
+                switch _photoStore.deleteStereogram(stereogram) {
+                case .Error(let error):
+                    error.showAlertWithTitle("Error discarding stereogram", parentViewController:self)
+                case .Success:
+                    break
+                }
+            }
             photoCollection.reloadData()
-        case .Error(let error):
-            error.showAlertWithTitle("Error saving photo", parentViewController: self)
-        }
     }
     
     func dismissedFullImageViewController(controller: FullImageViewController) {
@@ -148,12 +166,13 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
     
     // MARK: StereogramViewController delegate
     
-    func stereogramViewController(controller: StereogramViewController, createdStereogram stereogram: UIImage) {
-        controller.dismissViewControllerAnimated(true) {
-            // Once dismissed, trigger the full image view controller to examine the image.
-            controller.reset()
-            self.showApprovalWindowForImage(stereogram)
-        }
+    func stereogramViewController(controller: StereogramViewController
+        ,       createdStereogram stereogram: Stereogram) {
+            controller.dismissViewControllerAnimated(true) {
+                // Once dismissed, trigger the full image view controller to examine the image.
+                controller.reset()
+                self.showApprovalWindowForStereogram(stereogram)
+            }
     }
     
     func stereogramViewControllerWasCancelled(controller: StereogramViewController) {
@@ -161,42 +180,57 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
     }
     
     // MARK: - Private data
-
-    private var exportItem: UIBarButtonItem!, editItem: UIBarButtonItem!
-    private let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .WhiteLarge)
-    private var collectionViewThumbnailProvider: CollectionViewThumbnailProvider?
-    private var stereogramViewController: StereogramViewController!
     
+    /// The photo store whose stereograms we are displaying.
+    private let _photoStore: PhotoStore
 
-    // Creates the navigation buttons and adds them to the navigation controller. Called from the initializers as part of the setup process.
+    /// Toolbar button items we add to the view.
+    private var _exportItem: UIBarButtonItem?, _editItem: UIBarButtonItem?
+
+    /// An activity indicator we can present for long-running operations.
+    private let _activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .WhiteLarge)
+
+    /// This retrieves thumbnails from the photo store for a given collection view.
+    private var _collectionViewThumbnailProvider: CollectionViewThumbnailProvider?
+
+    /// The controller used to present a view for taking the stereogram images.
+    private let _stereogramViewController: StereogramViewController
+    
+    // MARK: Private Methods
+    
+    /// Creates the navigation buttons and adds them to the navigation controller. 
+    ///
+    /// Called from the initializers as part of the setup process.
+    
     private func setupNavigationButtons() {
         let takePhotoItem = UIBarButtonItem(barButtonSystemItem: .Camera, target: self, action: "takePicture")
-        self.exportItem = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: "actionMenu")
-        self.editItem = editButtonItem()
+        let exportItem = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: "actionMenu")
+        _exportItem = exportItem
+        let editItem = editButtonItem()
+        _editItem = editItem
         navigationItem.rightBarButtonItems = [takePhotoItem]
         navigationItem.leftBarButtonItems = [exportItem, editItem]
         self.editing = false
     }
-    
-    // Sets the size of the thumbnails in the collection view.
-    private func setThumbnailSize(thumbnailSize size: CGSize) {
-        assert(photoCollection.collectionViewLayout.isKindOfClass(UICollectionViewFlowLayout.self), "Photo collection view layout is not a flow layout.")
-        if let flowLayout = photoCollection.collectionViewLayout as? UICollectionViewFlowLayout {
-            flowLayout.itemSize = size
-            flowLayout.invalidateLayout()
-        }
-    }
-    
+
+    /// Creates a message to show the user when checking if they really want to delete stereograms.
+    ///
+    /// :param: numToDelete -  The number of sterograms the user wants to delete.
+    /// :returns: A formatted string to display to the user in the delete-confirmation dialog.
+
     private func formatDeleteMessage(numToDelete: UInt) -> String {
         let postscript = "This operation cannot be undone."
         if numToDelete == 1 { return "Do you really want to delete this photo?\n\(postscript)" }
         return "Do you really want to delete these \(numToDelete) photos?\n\(postscript)"
     }
 
-    // Copy the photos in the given array of index paths to the app's camera roll.
+    /// Copy the specified photos to the app's camera roll.
+    ///
+    /// :param: selectedIndexes - An array of NSIndexPath objects identifying stereograms in the photo store which we want to export.
+
     private func copyPhotosToCameraRoll(selectedIndexes: [NSIndexPath]) {
         for indexPath in selectedIndexes {
-            let result = photoStore.copyImageToCameraRoll(UInt(indexPath.indexAtPosition(1)))
+            let result = _photoStore.copyStereogramToCameraRoll(indexPath.indexAtPosition(1))
             result.onError() { error in error.showAlertWithTitle("Error exporting to camera roll", parentViewController: self) }
             if !result.success { return }   // Stop on the first error, to avoid swamping the user with alerts.
         }
@@ -205,31 +239,39 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
         setEditing(false, animated: true)
     }
     
+    /// Create the activity indicator if necessary and size it to fit the frame it is contained in.
+
     private func setupActivityIndicator() {
         // Add the activity indicator to the view if it is not there already. It starts off hidden.
-        if !activityIndicator.isDescendantOfView(view) {
-            view.addSubview(activityIndicator)
+        if !_activityIndicator.isDescendantOfView(view) {
+            view.addSubview(_activityIndicator)
         }
         // Ensure the activity indicator fits in the frame.
-        let activitySize = activityIndicator.bounds.size
+        let activitySize = _activityIndicator.bounds.size
         let parentSize = view.bounds.size
         let frame = CGRectMake((parentSize.width / 2) - (activitySize.width / 2), (parentSize.height / 2) - (activitySize.height / 2), activitySize.width, activitySize.height)
-        activityIndicator.frame = frame
+        _activityIndicator.frame = frame
     }
     
+    /// Set whether to display the activity indicator or to hide it.
+
     private var showActivityIndicator: Bool {
-        get { return !activityIndicator.hidden }
+        get { return !_activityIndicator.hidden }
         set {
-            activityIndicator.hidden = !newValue
+            _activityIndicator.hidden = !newValue
             if newValue {
-                activityIndicator.startAnimating()
+                _activityIndicator.startAnimating()
             } else {
-                activityIndicator.stopAnimating()
+                _activityIndicator.stopAnimating()
             }
         }
     }
     
-    
+    /// Presents an alert to the user warning about the pending delete. 
+    /// If accepted, deletes all the selected stereograms from the photo collection
+    ///
+    /// :param: photoCollection - The collection to check. All selected images in this collection will be deleted.
+
     private func deletePhotos(photoCollection: UICollectionView) {
         let indexPaths = photoCollection.indexPathsForSelectedItems() as! [NSIndexPath]
         if indexPaths.count > 0 {
@@ -237,7 +279,7 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
             let alertController = UIAlertController(title: "Confirm deletion", message: message, preferredStyle: .Alert)
             alertController.addAction(UIAlertAction(title: "Delete", style: UIAlertActionStyle.Destructive) { (action) in
                 NSLog("Deleting images at index paths: \(indexPaths)")
-                self.photoStore.deleteImagesAtIndexPaths(indexPaths).onError() {
+                self._photoStore.deleteStereogramsAtIndexPaths(indexPaths).onError() {
                     $0.showAlertWithTitle("Error deleting photos", parentViewController: self)
                 }
                 self.setEditing(false, animated: true)

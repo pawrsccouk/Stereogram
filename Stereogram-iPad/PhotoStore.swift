@@ -11,308 +11,210 @@ import UIKit
 
 // MARK: Error domain and codes for the Photo Store.
 
+/// The error domain for errors returned when accessing the photo store.
 public enum ErrorDomain: String { case PhotoStore = "PhotoStore" }
 
+/// A list of error codes indicating what went wrong.
+///
+/// - UnknownError : Something failed but didn't say why.
+/// - CouldntCreateSharedStore   : Error creating the main stereogram pictures store.
+/// - CouldntLoadImageProperties : Error loading properties for an image
+/// - IndexOutOfBounds           : Invalid index into the photo-store collection.
+/// - CouldntCreateStereogram    : Error creating the stereogram object
+/// - InvalidFileFormat          : A problem was found with the format of a stereogram object.
 public enum ErrorCode : Int {
     case UnknownError             =   1,
          CouldntCreateSharedStore = 100,
          CouldntLoadImageProperties    ,
          IndexOutOfBounds              ,
-         CouldntCreateStereogram
+         CouldntCreateStereogram       ,
+         InvalidFileFormat
 }
 
-// How the stereogram should be viewed.
-public enum ViewMode {
-    case Crosseyed,   // Adjacent pictures, view crosseyed.
-         Walleyed,         // Adjacent pictures, view wall-eyed
-         RedGreen,         // Superimposed pictures, use red green glasses.
-         RandomDot         // "Magic Eye" format.
-}
-
-
-
-private var _singleInstance: PhotoStore!
-
+/// Stores a collection of Stereogram objects.
 public class PhotoStore {
     
+    /// Designated initializer. Attempts to create the store and returns an error if it fails.
+    ///
+    /// :param: error - An error object which holds the issue if the constructor fails.
     public init? (inout error: NSError?) {
         // Create the photo folder. Log an error if it fails and abort.
-        switch photoFolder() {
+        switch PhotoStore.createPhotoFolderURL() {
         case .Success(let p):
-            photoFolderPath = p.value
+            _photoFolderURL = p.value
         case .Error(let e):
             NSLog("Error creating photo folder: \(e)")
             error = e
+            _photoFolderURL = NSURL()
             return nil
         }
-        
-        switch loadProperties() {
-        case .Success(let p):
-            imageProperties = p.value
-        case .Error(let e):
-            error = e
+        // Now find and load all the streograms under that URL.
+        switch Stereogram.allStereogramsUnderURL(_photoFolderURL) {
+        case .Success(let result):
+            _stereograms = result.value
+        case .Error(let err):
+            error = err
             return nil
         }
     }
     
 
-    // MARK: - Image Storage
+    // MARK: - Stereogram Storage
     
-    // Number of images stored in here.
+    /// Number of stereograms stored in here.
     var count: Int {
-        return imageProperties.count
+        return _stereograms.count
     }
     
-    // Array of the paths to the images.
-    private var imagePaths: [FileName] {
-        return sorted(imageProperties.keys)
-    }
-    
-    private var thumbnailCache = ThumbnailCache()
-    
-    // Attempts to add the image to the store. dateTaken is when the original photo was taken, which is added to the properties.
-    func addImage(image: UIImage, dateTaken: NSDate) -> Result {
-        if let fileData = UIImageJPEGRepresentation(image, 1.0) {
-            let filePath = getUniqueFilename(photoFolderPath)
-            var error: NSError?
-            if !fileData.writeToFile(filePath, options: .DataWritingAtomic, error: &error) {
-                if error == nil { error = defaultError }
-                return .Error(error!)
-            }
-            imageProperties[filePath] = [.DateTaken : dateTaken]
-            thumbnailCache.addThumbnailForImage(image, atPath: filePath)
-            return .Success()
+    /// Create a new stereogram on disk using the images provided, then add it to the collection and return it
+    ///
+    /// :param: leftImage - The left-hand image
+    /// :param: rightImage - The right-hand image
+    /// :returns: A Stereogram object on success, or an error on failure
+    func createStereogramFromLeftImage(leftImage: UIImage, rightImage: UIImage) -> ResultOf<Stereogram> {
+        let result = Stereogram.stereogramFromLeftImage(leftImage, rightImage: rightImage, baseURL: _photoFolderURL)
+        switch result {
+        case .Success(let s):
+            addStereogram(s.value)
+        default: break
         }
-        let userInfo = [NSLocalizedDescriptionKey : "Unable to add the image - the image is corrupt."]
-        return .Error(NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntCreateSharedStore.rawValue, userInfo: userInfo))
+        return result
+    }
+    
+    /// Adds a stereogram to the collection.
+    ///
+    /// The stereogram will not be added if it already exists in the collection.
+    ///
+    /// :param: stereogram - The stereogram to add.
+    func addStereogram(stereogram: Stereogram) {
+        if !contains(_stereograms, stereogram) {
+            _stereograms.append(stereogram)
+        }
     }
     
     
-    // Retrieves the image in the collection which is at index position <index> or an error if it is not found.
-    func imageAtIndex(index: UInt) -> ResultOf<UIImage> {
-        return ImageManager.imageFromFile(imagePaths[Int(index)])
+    /// Retrieves a stereogram from the collection
+    ///
+    /// :param: index - The index of the stereogram to return.
+    /// :returns: The stereogram if present or an error if not.
+    func stereogramAtIndex(index: Int) -> Stereogram {
+        return _stereograms[index]
     }
     
     
+    /// Deletes multiple stereograms from the collection.
+    ///
+    /// :param: paths - An array of NSIndexPath object indicating which stereograms to delete.
+    /// :returns: Success or Error with the NSError object attached.
+    ///
+    /// NB: As soon as an error is detected, this method stops immediately. No cleanup or rollback actions are performed.
+    func deleteStereogramsAtIndexPaths(paths: [NSIndexPath]) -> Result {
+        let stereogramsToDelete = paths.map { indexPath  in self._stereograms[indexPath.item] }
+        
+        return eachOf(stereogramsToDelete) { (index, stereogram) -> Result in
+            return self.deleteStereogram(stereogram)
+        }
+    }
     
-    // Deletes the images at the specified index paths.
-    func deleteImagesAtIndexPaths(paths: [NSIndexPath]) -> Result {
-        return eachOf(paths.map{ self.imagePaths[$0.item]}) { (index, path) -> Result in
-            var error: NSError?
-            if !self.fileManager.removeItemAtPath(path, error: &error) {
-                if error == nil { error = self.defaultError }
-                return .Error(error!)
-            }
-            self.imageProperties.removeValueForKey(path)
-            return .Success()
-       }
+    /// Deletes a single stereogram from the collection.
+    ///
+    /// :param: stereogram - The stereogram to remove.
+    /// :returns: Success or an error if the operation faied.
+    ///
+    /// This deletes the stereogram data from the disk as well as removing it from the current collection. 
+    /// Once completed, this stereogram object is then invalid.
+    func deleteStereogram(stereogram: Stereogram) -> Result {
+        assert(contains(_stereograms, stereogram), "Array \(_stereograms) doesn't contain \(stereogram)")
+        let result = stereogram.deleteFromDisk()
+        if result.success {  // Remove the stereogram from the list.
+            _stereograms = _stereograms.filter { sg in sg != stereogram }
+        }
+        return result
     }
  
-    // Overwrites the image at the given position with a new image.
-    // Returns an error if there is no image at index already.
-    func replaceImageAtIndex(index: UInt, withImage newImage: UIImage) -> Result {
-        let filePath = imagePaths[Int(index)]
-        let fileData = UIImageJPEGRepresentation(newImage, 1.0)
-        var error: NSError?
-        if !fileData.writeToFile(filePath, options: .DataWritingAtomic, error: &error) {
-            if error == nil { error = defaultError }
-            return .Error(error!)
-        }
-        // Update the thumbnail to display the new image.
-        return thumbnailCache.addThumbnailForImage(newImage, atPath: filePath).result
-     }
-
-    // MARK: Image manipulation
-    
-    // Return a thumbnail image for the image stored at index INDEX.
-    func thumbnailAtIndex(index: UInt) -> ResultOf<UIImage> {
-        return thumbnailCache.thumbnailForImage(imagePaths[Int(index)])
-    }
-    
-    // Copies the image at position <index> into the camera roll.
-    func copyImageToCameraRoll(index: UInt) -> Result {
-        return imageAtIndex(index).map0(alwaysOk{ UIImageWriteToSavedPhotosAlbum($0, nil, nil, nil) })
-    }
-
-    // Toggles the viewing method from crosseye to walleye and back for the image at position <index>.
-    func changeViewingMethod(index: UInt) -> Result {
-       return imageAtIndex(index)
-            .map( ImageManager.changeViewingMethod )
-            .map0 { (swappedImage: UIImage) -> Result in return self.replaceImageAtIndex(index, withImage: swappedImage) }
-    }
-    
-    
-    // Save the image property file.
-    func saveProperties() -> Result {
-        
-        // Make a copy of the properties dict, converting the type from a Swift dict to an NSDictionary. This is a hack, as NSDictionary has a save function I want to use.
-        var propertyArrayToSave = NSMutableDictionary()
-        for (filePath, imgPropertyDict)  in imageProperties {
-            let newProperties = NSMutableDictionary()
-            for (k,v) in imgPropertyDict {
-                newProperties.setValue(v, forKey: k.rawValue)
+    /// Overwrites the image at the given position with a new image.
+    ///
+    /// :param: index - The index of the stereogram to replace in the collection.
+    /// :param: stereogram - The new stereogram replacing the one at index.
+    /// :returns: An error if there is no image at index already, or if the replacement failed. Otherwise success.
+    ///
+    /// NB: This deletes the old stereogram from the disk as well as removing it from the collection. 
+    /// The stereogram object is invalid after this method returns successfully.
+    func replaceStereogramAtIndex(index: Int, withStereogram newStereogram: Stereogram) -> Result {
+        let stereogramToGo = _stereograms[index]
+        if stereogramToGo != newStereogram {
+            let result = stereogramToGo.deleteFromDisk()
+            if !result.success {
+                return result
             }
-            propertyArrayToSave.setValue(newProperties, forKey: filePath)
+            _stereograms[index] = newStereogram
         }
-        
-        // Add a version number in case I change the format.
-        let masterProperties = NSMutableDictionary(object: NSNumber(integer: 1), forKey: PropertyKey.Version.rawValue)
-        propertyArrayToSave.setValue(masterProperties, forKey: MasterPropertyKey.Version.rawValue)
-        
-        // Save the data, and return an error if it went wrong.
-        if propertyArrayToSave.writeToFile(propertiesFilePath, atomically: true) {
-            return .Success()
-        }
-        let userInfo = [NSLocalizedDescriptionKey : "Couldn't save the properties file at [\(propertiesFilePath)"]
-        return .Error(NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntLoadImageProperties.rawValue, userInfo: userInfo))
-    }
-
-    private func loadProperties() -> ResultOf<MasterPropertyDict> {
-        // Load the image properties and then compare them to the actual images, adding or removing entries until they match.
-        return and(loadImageProperties(propertiesFilePath), loadImageFilenames(photoFolderPath)).map { (tuple) -> ResultOf<MasterPropertyDict> in
-            var (allProperties, filesystemFilenames) = tuple
-            let allFilenames: [FileName] = allProperties.keys.array
-            let propertyFilenames = Set<FileName>(allFilenames)
-            
-            // Remove entries in propertyFilenames which are not in the file system.
-            let filesToRemove = propertyFilenames.subtract(filesystemFilenames)
-            for file in filesToRemove {
-                allProperties[file] = nil
-            }
-            
-            // Add any entries in the filesystem which are not in the property list.
-            let filesToAdd = filesystemFilenames.subtract(propertyFilenames)
-            for file in filesToAdd {
-                allProperties[file] = PropertyDict()
-            }
-            return ResultOf(allProperties)
-        }
+        return .Success()
     }
     
+    // MARK: Actions
+    
+    /// Copies a stereogram into the device's camera roll.
+    ///
+    /// :param: index - Index of the image to copy.
+    /// :returns: Success or an error indicating what went wrong.
+    func copyStereogramToCameraRoll(index: Int) -> Result {
+        let stereogram = _stereograms[index]
+        return stereogram.stereogramImage().map0( alwaysOk {
+            UIImageWriteToSavedPhotosAlbum($0, nil, nil, nil)
+        })
+    }
+   
     // MARK: - Private Data
     
-    // Dictionary of properties for each image.
+    /// Array of the stereogram objects we are storing.
+    private var _stereograms = [Stereogram]()
     
-    // Keys for the image properties.
-    private enum PropertyKey: String {
-        // Keys for the individual image property dicts.
-    case Orientation   = "Orientation",     // Portrait or Landscape.
-         DateTaken     = "DateTaken",       // Date original photo was taken.
-         ViewMode      = "ViewMode"         // Crosseyed, Walleyed, Red/Green, Random-dot
-        // Keys for the master property dict.
-        case Version = "Version"            // Version number of this file.
-    }
-    private typealias PropertyDict = [PropertyKey : AnyObject]
+    /// Path to where we are keeping the photos.
+    private let _photoFolderURL: NSURL
     
-    // Properties are stored in a master dictionary, keyed by file path - the full path to the image's file.
-    // Extra master-specific entries are stored using fake keys stored in the MasterPropertyKey enum.
     
-    private typealias FileName = String
-    private enum MasterPropertyKey: FileName { case Version = "Version" }
-    private typealias MasterPropertyDict = [FileName : PropertyDict]
-    private var imageProperties = MasterPropertyDict()
-    
-    // A file manager object to use for loading and saving.
-    private let fileManager = NSFileManager.defaultManager()
-    
-    // Path to where we are keeping the photos.
-    private var photoFolderPath: String!
-    
-    // Path to the properties file for the photos.
-    private var propertiesFilePath: String {
+    /// Creates the global photos folder if it doesn't already exist.
+    ///
+    /// :returns: The folder path once set up.
+    ///
+    /// You should call this only once during setup.
+    private class func createPhotoFolderURL() -> ResultOf<NSURL> {
+        let fileManager = NSFileManager.defaultManager()
         let folders = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
-        assert(!folders.isEmpty, "No document directory specified.")
-        return folders[0].stringByAppendingPathComponent("Properties")
-    }
-    
-    // A default error to return if the OS doesn't provide one. Nothing we can do in that case, as we have no idea what went wrong.
-    private let defaultError = NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.UnknownError.rawValue, userInfo: [NSLocalizedDescriptionKey : "Unknown error"])
-    
-    // Should be called once during setup, to create the photos folder if it doesn't already exists.
-    // Returns the folder path once set up.
-    
-    private func photoFolder() -> ResultOf<String> {
-        let folders = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
-        let photoDir = folders[0].stringByAppendingPathComponent("Pictures") as String
-        
-        var isDirectory = UnsafeMutablePointer<ObjCBool>.alloc(1)
-        isDirectory.initialize(ObjCBool(false))
-        let fileExists = fileManager.fileExistsAtPath(photoDir, isDirectory: isDirectory)
-        if fileExists && isDirectory.memory {
-            return ResultOf(photoDir)
-        }
-        
-        // If the directory doesn't exist, then let the file manager try and create it.
-        var error: NSError?
-        if fileManager.createDirectoryAtPath(photoDir, withIntermediateDirectories:false, attributes:nil, error:&error) {
-            return ResultOf(photoDir)
-        }
-        else {
-            if error == nil { error = defaultError }
-            return .Error(error!)
-        }
-    }
-
-    // Return a filename which should not already be used. I do this by creating a GUID for the name part.
-    private func getUniqueFilename(photoDir: String) -> String {
-        let newUIDString: NSString = CFUUIDCreateString(kCFAllocatorDefault, CFUUIDCreate(kCFAllocatorDefault))
-        var filePath = photoDir.stringByAppendingPathComponent(newUIDString as String).stringByAppendingString(".jpg")
-        assert(!fileManager.fileExistsAtPath(filePath)) // Name should be unique so no photo should exist yet.
-        return filePath
-    }
-    
-    private func loadImageProperties(path: String) -> ResultOf<[FileName : PropertyDict]> {
-        let nsDictionary = NSDictionary(contentsOfFile: path)
-        // If we have a dictionary, check the version is valid.
-        let INVALID_VERSION = -1.0
-        var version = INVALID_VERSION
-        if let dict = nsDictionary {
-            if let propDict = dict[MasterPropertyKey.Version.rawValue] as? NSDictionary {
-                if let versionObject = propDict[PropertyKey.Version.rawValue] as? NSNumber {
-                    version = versionObject.doubleValue
-                }
-            }
-            assert(version == 1.0, "Invalid data version \(version)")
-            
-            // Copy the NSDictionary contents into a [FileName : PropertyDict] dictionary.
-            // TODO: Implement proper load/save routines for the dictionary.
-            // This is a hack.  Load as an NSDictionary, then copy the values across.
-            var result = [FileName : PropertyDict]()
-            for (key, subDict) in dict {
-                var subResult = PropertyDict()
-                for (subKey, subValue) in (subDict as! NSDictionary) {
-                    if let propertyKey = PropertyKey(rawValue: subKey as! String) {
-                        subResult[propertyKey] = subValue
+        if let
+            firstObject: String = folders[0] as? String,
+            rootURL = NSURL(fileURLWithPath:firstObject, isDirectory: true) {
+                let photoDir = rootURL.URLByAppendingPathComponent("Pictures")
+                if PhotoStore.urlIsDirectory(photoDir) {
+                    return ResultOf(photoDir)
+                } else {
+                    // If the directory doesn't exist, then let the file manager try and create it.
+                    var error: NSError?
+                    if fileManager.createDirectoryAtURL(photoDir, withIntermediateDirectories:false, attributes:nil, error:&error) {
+                        return ResultOf(photoDir)
                     } else {
-                        let errorMessage = "The string [\(subKey)] is not a valid property list key"
-                        return .Error(NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntLoadImageProperties.rawValue, userInfo: [NSLocalizedDescriptionKey : errorMessage]))
+                        return .Error(error!)
                     }
                 }
-                result[key as! FileName] = subResult
-            }
-            return ResultOf(result)
         }
-        return ResultOf([FileName : PropertyDict]())
+        return .Error(NSError.unknownError("createPhotoFolderURL"))
     }
     
-    
-    // Return all the filenames in the image directory.
-    private typealias FilenameSet = Set<FileName>
-    private func loadImageFilenames(folderPath: String) -> ResultOf<FilenameSet> {
-        var error: NSError?
-        if let fileNames = fileManager.contentsOfDirectoryAtPath(folderPath, error: &error) as? [String] {
-            let fullNames = fileNames.map { folderPath.stringByAppendingPathComponent($0) }
-            return ResultOf(FilenameSet(fullNames))
-        } else {
-            if error == nil {
-                let userInfo = [NSLocalizedDescriptionKey : "Unknown error reading directory [\(folderPath)]"]
-                error = NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntLoadImageProperties.rawValue, userInfo: userInfo)
-            }
-            return .Error(error!)
+    /// Returns true if url exists and points to a directory.
+    ///
+    /// :param: url - A file URL to test.
+    /// :returns: True if url is a directory, False otherwise.
+    private class func urlIsDirectory(url: NSURL) -> Bool {
+        var isDirectory = UnsafeMutablePointer<ObjCBool>.alloc(1)
+        isDirectory.initialize(ObjCBool(false))
+        let fileManager = NSFileManager.defaultManager()
+        if let path = url.path {
+            let fileExists = fileManager.fileExistsAtPath(url.path!, isDirectory:isDirectory)
+            let isDir = isDirectory.memory
+            return fileExists && isDir
         }
+        return false
     }
-    
-
-    
     
 }
