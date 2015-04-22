@@ -18,8 +18,8 @@ class CollectionViewThumbnailProvider : NSObject, UICollectionViewDataSource, UI
     
     /// Designated initializer.
     ///
-    /// :param: photoStore - The photo store to search for images.
-    /// :param: photoCollection - The collection view to populate with thumbnails from the photo store.
+    /// :param: photoStore       The photo store to search for images.
+    /// :param: photoCollection  The collection view to populate with thumbnails from the photo store.
 
     init(photoStore: PhotoStore, photoCollection: UICollectionView) {
         self._photoStore = photoStore

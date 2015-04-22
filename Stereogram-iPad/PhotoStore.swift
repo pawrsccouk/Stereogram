@@ -16,19 +16,22 @@ public enum ErrorDomain: String { case PhotoStore = "PhotoStore" }
 
 /// A list of error codes indicating what went wrong.
 ///
-/// - UnknownError : Something failed but didn't say why.
+/// - UnknownError               : Something failed but didn't say why.
 /// - CouldntCreateSharedStore   : Error creating the main stereogram pictures store.
 /// - CouldntLoadImageProperties : Error loading properties for an image
 /// - IndexOutOfBounds           : Invalid index into the photo-store collection.
 /// - CouldntCreateStereogram    : Error creating the stereogram object
 /// - InvalidFileFormat          : A problem was found with the format of a stereogram object.
+/// - FileNotFound               : One of the internal files that make up a stereogram is missing.
 public enum ErrorCode : Int {
-    case UnknownError             =   1,
-         CouldntCreateSharedStore = 100,
+    case UnknownError             =   1
+    
+    case CouldntCreateSharedStore = 100,
          CouldntLoadImageProperties    ,
          IndexOutOfBounds              ,
          CouldntCreateStereogram       ,
-         InvalidFileFormat
+         InvalidFileFormat             ,
+         FileNotFound
 }
 
 /// Stores a collection of Stereogram objects.

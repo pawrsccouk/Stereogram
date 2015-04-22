@@ -45,6 +45,7 @@ class Stereogram: NSObject {
     ///
     /// :param: url -  A File URL pointing to the directory to search.
     /// :returns: An array of Stereogram objects on success or an NSError on failure.
+    
     class func allStereogramsUnderURL(url: NSURL) -> ResultOf<[Stereogram]> {
         let fileManager = NSFileManager.defaultManager()
         var stereogramArray = [Stereogram]()
@@ -52,8 +53,8 @@ class Stereogram: NSObject {
         if let
             fileArray = fileManager.contentsOfDirectoryAtURL(url, includingPropertiesForKeys:nil, options:.SkipsHiddenFiles, error:&error),
             fileNames = fileArray as? [NSURL] {
-            for url: NSURL in fileNames {
-                switch stereogramFromURL(url) {
+            for stereogramURL in fileNames {
+                switch stereogramFromURL(stereogramURL) {
                 case .Success(let result):
                     stereogramArray.append(result.value)
                 case .Error(let err):
@@ -70,42 +71,49 @@ class Stereogram: NSObject {
     ///
     /// :param: url -  A File URL pointing to the root directory of a stereogram object
     /// :returns: A Stereogram object on success or an NSError object on failure.
+    
     class func stereogramFromURL(url: NSURL) -> ResultOf<Stereogram> {
-        // URL should be pointing to a directory. Inside this there should be 3 files: LeftImage.jpg, RightImage.jpg, properties.plist
-        var error: NSError?
-        let fileManager = NSFileManager.defaultManager()
-        if let directoryContents = fileManager.contentsOfDirectoryAtURL(url, includingPropertiesForKeys:nil, options:.SkipsHiddenFiles, error:&error) {
-            
-            var propertyList: PropertyDict?
-            var leftImageURL: NSURL?, rightImageURL: NSURL?
-            for componentURL: NSURL in directoryContents as! [NSURL] {
-                if let lastComponent = componentURL.lastPathComponent {
-                    
-                    switch lastComponent {
-                    case LeftPhotoFileName:  leftImageURL  = componentURL.copy() as? NSURL
-                    case RightPhotoFileName: rightImageURL = componentURL.copy() as? NSURL
-                    case PropertyListFileName:
-                       switch loadPropertyList(componentURL) {
-                        case .Success(let result): propertyList = result.value
-                        case .Error(let error): return .Error(error)
-                        }
-                    default:
-                        NSLog("Unknown component \(lastComponent) found in Stereogram directory \(url)")
-                     }
-                    
-                } else {
-                    NSLog("Unable to get last component of URL \(componentURL)")
+        // URL should be pointing to a directory. Inside this there should be 3 files: LeftImage.jpg, RightImage.jpg, Properties.plist. Return an error if any of these are missing. Also load the properties file.
+        
+        let manager = NSFileManager.defaultManager()
+        let defaultPropertyDict: PropertyDict = [kViewingMethod : ViewMode.Crosseyed.rawValue]
+        
+        /// Checks if a file exists given a base directory URL and filename.
+        ///
+        /// :param: baseURL The Base URL to look in.
+        /// :param: fileName The name of the file to check for.
+        /// :returns: .Success if the file was present, .Error(NSError) if it was not.
+        
+        var fileExists = { (baseURL: NSURL, fileName: String) -> Result in
+            let fullURLPath = baseURL.URLByAppendingPathComponent(fileName).path
+            if let fullPath = fullURLPath {
+                if manager.fileExistsAtPath(fullPath) {
+                    return .Success()
                 }
             }
-            
-            if let leftURL = leftImageURL, rightURL = rightImageURL {
-                return ResultOf(Stereogram(leftImageURL: leftURL, rightImageURL: rightURL, propertyList: propertyList!))
-            } else {
-                return .Error(error ?? NSError.unknownError("Loading stereogram from \(url)"))
-            }
+            let userInfo = [NSFilePathErrorKey : NSString(string: fullURLPath ?? "<no path>")]
+            return .Error(NSError(errorDomain: ErrorDomain.PhotoStore, errorCode: ErrorCode.FileNotFound, userInfo: userInfo))
         }
-        return .Error(error!)
-    }
+        
+        // if any of the files don't exist, then return an error.
+        let result = and([
+            fileExists(url, LeftPhotoFileName),
+            fileExists(url, RightPhotoFileName),
+            fileExists(url, PropertyListFileName)])
+        if let err = result.error {
+            return .Error(err)
+        }
+        
+        // Load the property list at the given URL.
+        var propertyList = defaultPropertyDict
+        switch loadPropertyList(url.URLByAppendingPathComponent(PropertyListFileName)) {
+        case .Success(let propList):
+            propertyList = propList.value
+        case .Error(let error):
+            return .Error(error)
+        }
+        return ResultOf(Stereogram(baseURL: url, propertyList: propertyList))
+     }
     
     
     /// Save the images provided to the disk under a specified directory and return a stereogram object referencing them.
@@ -120,9 +128,8 @@ class Stereogram: NSObject {
             let newStereogramURL = getUniqueStereogramURL(baseURL)
             let propertyList = [String : AnyObject]()
             switch writeToURL(newStereogramURL, propertyList: propertyList, leftImage: leftImage, rightImage: rightImage) {
-            case .Success(let urlsWrapper):
-                let urls = urlsWrapper.value
-                return ResultOf(Stereogram(leftImageURL: urls.0, rightImageURL: urls.1, propertyList: propertyList))
+            case .Success:
+                return ResultOf(Stereogram(baseURL: baseURL, propertyList: propertyList))
             case .Error(let error):
                 return .Error(error)
             }
@@ -146,21 +153,25 @@ class Stereogram: NSObject {
         }
         set {
             _propertyList[kViewingMethod] = newValue.rawValue
+            savePropertyList()
         }
+    }
+    
+    override var description: String {
+        return "\(super.description) <BaseURL: \(_baseURL), Properties: \(_propertyList)>"
     }
     
     
     //MARK: Initializers
 
     /// Designated Initializer. 
-    /// Creates a new stereogram object from two URLs and a property list.
+    /// Creates a new stereogram object from a URL and a property list.
     ///
-    /// :param: leftImageURL -  File URL pointing to the left image
-    /// :param: rightImageURL -  File URL pointing to the right image
-    /// :param: propertyList -  A dictionary of properties for this stereogram
-    private init(leftImageURL: NSURL, rightImageURL: NSURL, propertyList: PropertyDict) {
-        _leftImageURL = leftImageURL
-        _rightImageURL = rightImageURL
+    /// :param: baseImageURL File URL pointing to the main directory under which the images are stored.
+    /// :param: propertyList A dictionary of default properties for this stereogram
+    
+    private init(baseURL: NSURL, propertyList: PropertyDict) {
+        _baseURL = baseURL
         _propertyList = propertyList
         super.init()
         
@@ -172,6 +183,11 @@ class Stereogram: NSObject {
         // Notify when memory is low, so I can delete this cache.
         let centre = NSNotificationCenter.defaultCenter()
         centre.addObserver(self, selector:"lowMemoryNotification:", name:UIApplicationDidReceiveMemoryWarningNotification, object:nil)
+    }
+    
+    deinit {
+        let centre = NSNotificationCenter.defaultCenter()
+        centre.removeObserver(self)
     }
     
     // MARK: Methods
@@ -208,22 +224,37 @@ class Stereogram: NSObject {
                 case .Error(let error): return .Error(error)
                 case .Success(let result): _stereogramImage = result.value
                 }
-                break
                 
             case .Walleyed:
                 switch ImageManager.makeStereogramWithLeftPhoto(right, rightPhoto:left) {
                 case .Error(let error): return .Error(error)
                 case .Success(let result): _stereogramImage = result.value
                 }
-                break
+                
+            case .AnimatedGIF:
+                _stereogramImage = UIImage.animatedImageWithImages([left, right], duration: 0.25)
                 
             default:
                 NSException(name: "Not implemented", reason: "Viewing method \(self.viewingMethod) is not implemented yet.", userInfo: nil).raise()
                 break
             }
         }
-        NSLog("Stereogram \(self) created stereogram image \(_stereogramImage)")
         return ResultOf(_stereogramImage!)
+    }
+    
+    /// URL of the left image file (computed from the base URL)
+    var leftImageURL: NSURL {
+        return _baseURL.URLByAppendingPathComponent(LeftPhotoFileName)
+    }
+    
+    /// URL of the right image file (computed from the base URL)
+    var rightImageURL: NSURL {
+        return _baseURL.URLByAppendingPathComponent(RightPhotoFileName)
+    }
+    
+    /// URL of the property list file (computed from the base URL)
+    var propertiesURL: NSURL {
+        return _baseURL.URLByAppendingPathComponent(PropertyListFileName)
     }
     
     /// Return a thumbnail image, caching it if necessary.
@@ -235,9 +266,9 @@ class Stereogram: NSObject {
         var error: NSError?
         if _thumbnailImage == nil {
             // Get either the left or the right image file URL to use as the thumbnail.
-            var data: NSData? = NSData(contentsOfURL:_leftImageURL, options:options, error:&error)
+            var data: NSData? = NSData(contentsOfURL:leftImageURL, options:options, error:&error)
             if data == nil {
-                data = NSData(contentsOfURL:_rightImageURL, options:options, error:&error)
+                data = NSData(contentsOfURL:rightImageURL, options:options, error:&error)
             }
             if data == nil {
                 return .Error(error!)
@@ -252,12 +283,11 @@ class Stereogram: NSObject {
             } else {
                 let userInfo: [String : AnyObject] = [
                     NSLocalizedDescriptionKey : "Invalid image format in file",
-                    NSFilePathErrorKey        : _leftImageURL.path!]
+                    NSFilePathErrorKey        : leftImageURL.path!]
                 let err = NSError(errorDomain:.PhotoStore, errorCode:.InvalidFileFormat, userInfo:userInfo)
                 return .Error(err)
             }
         }
-        NSLog("Stereogram \(self) created thumbnail image \(_thumbnailImage)")
         return ResultOf(_thumbnailImage!)
     }
     
@@ -278,17 +308,15 @@ class Stereogram: NSObject {
     /// :returns: Success or an NSError object on failure.
     func deleteFromDisk() -> Result {
         var error: NSError?
-        if let objectFolderURL = _leftImageURL.URLByDeletingLastPathComponent {
-            NSLog("Deleting \(objectFolderURL)")
-            let fileManager = NSFileManager.defaultManager()
-            let success = fileManager.removeItemAtURL(objectFolderURL, error:&error)
-            if success {
-                _thumbnailImage = nil
-                _stereogramImage = nil
-                _leftImage = nil
-                _rightImage = nil
-                return .Success()
-            }
+        NSLog("Deleting \(_baseURL)")
+        let fileManager = NSFileManager.defaultManager()
+        let success = fileManager.removeItemAtURL(_baseURL, error:&error)
+        if success {
+            _thumbnailImage = nil
+            _stereogramImage = nil
+            _leftImage = nil
+            _rightImage = nil
+            return .Success()
         }
         return .Error(error!)
     }
@@ -296,8 +324,8 @@ class Stereogram: NSObject {
     
     //MARK: Private Data
     
-    /// URLs to the left and right images. Used to load the images when needed.
-    private let _leftImageURL: NSURL, _rightImageURL: NSURL
+    /// URLs to the base directory containing the images. Used to load the images when needed.
+    private let _baseURL: NSURL
     
     /// Properties file for each stereogram. Probably not cached, just load them when we open the object.
     private var _propertyList: PropertyDict
@@ -313,11 +341,12 @@ class Stereogram: NSObject {
     /// :param: propertyList -  The property list to output
     /// :param: leftImage -  The left image to save.
     /// :param: rightImage -  The right image to save.
-    /// :returns: A tuple with the URLs to the left and right images on success or an NSError on failure.
+    /// :returns: Success or  .Error(NSError) on failure.
+    
     private class func writeToURL(url: NSURL
         ,                propertyList: [String : AnyObject]
         ,                   leftImage: UIImage
-        ,                  rightImage: UIImage) -> ResultOf<(left: NSURL, right: NSURL)> {
+        ,                  rightImage: UIImage) -> Result {
             
             NSLog("writeToURL: url = \(url)")
             assert(url.path != nil, "URL \(url) has an invalid path")
@@ -351,15 +380,15 @@ class Stereogram: NSObject {
             }
             
             if let propertyListData = NSPropertyListSerialization.dataWithPropertyList(
-                propertyList as NSObject
-                ,     format: NSPropertyListFormat.XMLFormat_v1_0
-                ,    options: NSPropertyListWriteOptions.allZeros
+                propertyList
+                ,     format: .XMLFormat_v1_0
+                ,    options: .allZeros
                 ,      error: &error) {
-                let propertyListURL = url.URLByAppendingPathComponent(PropertyListFileName)
-                if !propertyListData.writeToURL(propertyListURL, options:.AtomicWrite, error:&error) {
-                    return .Error(error!)
-                }
-                return ResultOf(left:leftImageURL, right:rightImageURL) // Success. Return the URLs of the left and right images.
+                    let propertyListURL = url.URLByAppendingPathComponent(PropertyListFileName)
+                    if !propertyListData.writeToURL(propertyListURL, options:.AtomicWrite, error:&error) {
+                        return .Error(error!)
+                    }
+                    return .Success()
             }
             return .Error(NSError.unknownError("writeToURL"))
     }
@@ -368,6 +397,7 @@ class Stereogram: NSObject {
     ///
     /// :param: url -  File URL describing a path to a .plist file.
     /// :returns: A PropertyDict on success, an NSError on failure.
+    
     private class func loadPropertyList(url: NSURL) -> ResultOf<PropertyDict> {
         var error: NSError?
         if let propertyData = NSData(contentsOfURL:url, options:.allZeros, error:&error) {
@@ -385,7 +415,24 @@ class Stereogram: NSObject {
         return .Error(error!)
     }
     
-
+    /// Save the property list into it's appointed place.
+    ///
+    /// :returns: .Success or .Error(NSError) on failure.
+    
+    private func savePropertyList() -> Result {
+        var error: NSError?
+        if let data = NSPropertyListSerialization.dataWithPropertyList(_propertyList
+            ,  format: .XMLFormat_v1_0
+            , options: 0
+            ,   error: &error) {
+                if data.writeToURL(propertiesURL, options: .allZeros, error: &error) {
+                    return .Success()
+                }
+        }
+        return .Error(error ?? NSError.unknownError("savePropertyList"))
+    }
+    
+    
     
     /// Returns true if the path provided already exists and points to a directory.
     ///
@@ -402,7 +449,7 @@ class Stereogram: NSObject {
         }
         return false
     }
-    
+
     /// Saves the specified image into a file provided by the given URL
     ///
     /// :param: image -  The image to save.
@@ -467,9 +514,9 @@ class Stereogram: NSObject {
         
         switch whichImage {
         case .Left:
-            return loadData(_leftImageURL, &_leftImage)
+            return loadData(leftImageURL, &_leftImage)
         case .Right:
-            return loadData(_rightImageURL, &_rightImage)
+            return loadData(rightImageURL, &_rightImage)
         }
     }
     

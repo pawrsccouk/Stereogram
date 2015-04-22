@@ -149,7 +149,9 @@ public func alwaysOk<T>(fnc: (t: T) -> Void) -> ((t: T) -> Result) {
     }
 }
 
-// Given two values of type ResultOf<T>, if both are successful, return the results as a tuple. If either fails, then return the error.
+/// Given two values of type ResultOf<T>, if both are successful, return the results as a tuple.
+/// If either fails, then return the error.
+
 public func and<T,U>(r1: ResultOf<T>, r2: ResultOf<U>) -> ResultOf<(T,U)> {
     typealias TupleT = (T, U)
     switch r1 {
@@ -166,12 +168,23 @@ public func and<T,U>(r1: ResultOf<T>, r2: ResultOf<U>) -> ResultOf<(T,U)> {
 }
 
 /// Return success only if r1 and r2 both succeed. Otherwise return the first value that failed.
+///
+/// Note: This doesn't short-circuit. Both r1 and r2 are evaluated.
+
 public func and(r1: Result, r2: Result) -> Result {
-    if !r1.success {
-        return r1
-    } else if !r2.success {
-        return r2
-    } else {
-        return .Success()
+    return and([r1, r2])
+}
+
+/// Returns the first error it finds in the array, or Success if none are found.
+///
+/// :param: result An array of Result objects to test.
+/// :returns: .Error(NSError) if any of the results are errors, otherwise Success.
+///
+/// Note: This doesn't short-circuit. All expressions in result are evaluated.
+
+public func and(results: [Result]) -> Result {
+    if let firstError = results.filter({ $0.success }).first {
+        return firstError
     }
+    return .Success()
 }

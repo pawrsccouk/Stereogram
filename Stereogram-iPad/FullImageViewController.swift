@@ -75,10 +75,12 @@ class FullImageViewController: UIViewController, UIScrollViewDelegate {
         self._indexPath = indexPath
         self.delegate = delegate
         super.init(nibName: "FullImageView", bundle: nil)
-        let toggleViewMethodButtonItem = UIBarButtonItem(title: "Toggle View Method"
+        let toggleViewMethodButtonItem = UIBarButtonItem(title: "Change View Method"
             ,                                            style: .Plain
             ,                                           target: self
-            ,                                           action: "changeViewingMethod:")
+            ,                                           action: "selectViewingMethod:")
+        _viewingModeItem = toggleViewMethodButtonItem
+            
         // If we are using this to approve an image, then display "Keep" and "Discard" buttons.
         if forApproval {
             let keepButtonItem = UIBarButtonItem(title: "Keep"
@@ -165,43 +167,69 @@ class FullImageViewController: UIViewController, UIScrollViewDelegate {
         delegate.dismissedFullImageViewController(self)
     }
     
-    /// Toggle from cross-eye to wall-eye and back for the selected items.
+    /// Prompt the user with a menu of possible viewing methods they can select.
+    
+    func selectViewingMethod(sender: AnyObject?) {
+        
+        // TODO: Make a menu
+        let alertController = UIAlertController(title: "Select viewing style"
+            ,                                 message: "Choose one of the styles below"
+            ,                          preferredStyle: .ActionSheet)
+        
+        let animationAction = UIAlertAction(title: "Animation", style: .Default) { action in
+            self.changeViewingMethod(.AnimatedGIF)
+        }
+        alertController.addAction(animationAction)
+        
+        let crossEyedAction = UIAlertAction(title: "Cross-eyed", style: .Default) { action in
+            self.changeViewingMethod(.Crosseyed)
+        }
+        alertController.addAction(crossEyedAction)
+        
+        let wallEyedAction = UIAlertAction(title: "Wall-eyed", style: .Default) { action in
+            self.changeViewingMethod(.Walleyed)
+        }
+        alertController.addAction(wallEyedAction)
+
+        alertController.popoverPresentationController!.barButtonItem = _viewingModeItem
+        self.presentViewController(alertController, animated: true, completion: nil)
+    }
+    
+    /// Change the viewing method of the stereogram we are viewing.
     ///
     /// Create the new images on a separate thread, then call back to the main thread to replace them in the photo collection.
-    @IBAction func changeViewingMethod(sender: AnyObject?) {
+    ///
+    /// :param: viewMode The new viewing method.
+    
+    func changeViewingMethod(viewMode: ViewMode) {
+    
         showActivityIndicator = true
         var sgm = _stereogram, path = _indexPath
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
-            
-            switch(self._stereogram.viewingMethod) {
-            case .Crosseyed: sgm.viewingMethod = .Walleyed
-            case .Walleyed : sgm.viewingMethod = .Crosseyed
-            default:
-                NSException(name:"Not implemented"
-                    ,     reason:"Stereogram \(sgm) viewing method is not implemented."
-                    ,   userInfo: nil).raise()
-            }
+
+            sgm.viewingMethod = viewMode
             
             // Reload the image while we are in the background thread.
             let refreshResult = sgm.refresh()
+            
+            // Update the GUI on the main thread.
             dispatch_async(dispatch_get_main_queue()) {
                 
+                self.showActivityIndicator = false
                 switch refreshResult {
                 case .Success():
                     // Clear the activity indicator and update the image in this view.
-                    self.showActivityIndicator = false
                     switch sgm.stereogramImage() {
                     case .Success(let result):
                         self.imageView.image = result.value
-                        self.imageView.sizeToFit()
+                        //self.imageView.sizeToFit()
+                        self.setupScrollviewAnimated(true)
                         // Notify the system that the image has been changed in the view.
                         self.delegate.fullImageViewController?(self, amendedStereogram: sgm, atIndexPath: path)
                     case .Error(let error):
-                        self.showActivityIndicator = false
                         error.showAlertWithTitle("Error changing viewing method", parentViewController:self)
                     }
                 case .Error(let error):
-                    self.showActivityIndicator = false
                     error.showAlertWithTitle("Error changing viewing method", parentViewController: self)
                 }
             }
@@ -235,6 +263,10 @@ class FullImageViewController: UIViewController, UIScrollViewDelegate {
     /// An activity indicator we can show during lengthy operations.
     
     private let _activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .WhiteLarge)
+    
+    /// The bar button item that launches the viewing mode menu. Needed as we need to anchor the menu.
+    
+    private weak var _viewingModeItem: UIBarButtonItem!
     
     /// Indicate if the activity indicator should be shown or hidden.
     
@@ -270,6 +302,7 @@ class FullImageViewController: UIViewController, UIScrollViewDelegate {
     /// :param: animated -  If True, the scrollview will animate to show the new changes.
 
     private func setupScrollviewAnimated(animated: Bool) {
+        assert(imageView.image != nil, "Controller \(self) imageView \(imageView) has no associated image")
         if let viewedImage = imageView.image {
             scrollView.contentSize = imageView.bounds.size
         
