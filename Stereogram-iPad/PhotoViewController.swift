@@ -7,10 +7,11 @@
 //
 
 import UIKit
+import MessageUI
 
 /// A view controller which manages a view displaying a collection of sterogram images and presents a menu allowing users to modify or delete them.
 
-class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImageViewControllerDelegate, StereogramViewControllerDelegate {
+class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImageViewControllerDelegate, StereogramViewControllerDelegate, MFMailComposeViewControllerDelegate {
 
     /// Reference to the collection this view controller manages.
 
@@ -91,6 +92,9 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
         alertController.addAction(UIAlertAction(title: "Copy to gallery", style: .Default) { [unowned self] (action) in
             self.copyPhotosToCameraRoll(self.photoCollection.indexPathsForSelectedItems() as! [NSIndexPath])
         })
+        alertController.addAction(UIAlertAction(title: "Email", style: .Default, handler: { (action) in
+            self.sendPhotosViaEmail(self.photoCollection.indexPathsForSelectedItems() as! [NSIndexPath])
+        }))
         alertController.popoverPresentationController!.barButtonItem = _exportItem
         self.presentViewController(alertController, animated: true, completion: nil)
     }
@@ -179,6 +183,20 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
         controller.dismissViewControllerAnimated(true, completion: nil)
     }
     
+    // MARK: MFMailViewComposer delegate
+    func mailComposeController(controller: MFMailComposeViewController!
+        ,      didFinishWithResult result: MFMailComposeResult
+        ,                           error: NSError!) {
+            
+            // Dismiss the view controller window, and if there was an error display it after the main view has been removed.
+            dismissViewControllerAnimated(true) {
+                if result.value == MFMailComposeResultFailed.value {
+                    let err = error ?? NSError.unknownError("MFMailComposeViewController")
+                    err.showAlertWithTitle("Error sending mail", parentViewController: self)
+                }
+            }
+    }
+    
     // MARK: - Private data
     
     /// The photo store whose stereograms we are displaying.
@@ -195,6 +213,27 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
 
     /// The controller used to present a view for taking the stereogram images.
     private let _stereogramViewController: StereogramViewController
+    
+    
+    /// HTML text to use as an email body.
+    ///
+    /// Contains two replaceable parameters:
+    ///
+    /// #. Text to use for the main body. Example: "Here are 2 images exported from Stereogram"
+    /// #. A date on which they were exported.
+    
+    private let emailBodyTemplate = "\n".join([
+        "<html>",
+        "  <head/>",
+        "  <body>",
+        "    <H1>Exported Stereograms</H1>",
+        "    <p>%@<br/>",
+        "       Exported on %@",
+        "    </p>",
+        "  </body>",
+        "</html>",
+        ])
+    
     
     // MARK: Private Methods
     
@@ -235,6 +274,58 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
             if !result.success { return }   // Stop on the first error, to avoid swamping the user with alerts.
         }
         
+        // Now stop editing, which will deselect all the items.
+        setEditing(false, animated: true)
+    }
+    
+    /// Present an email message with the selected stereograms attached.
+    ///
+    /// :param: selectedIndexes - An array of NSIndexPath objects identifying stereograms in the photo store which we want to export.
+    
+    private func sendPhotosViaEmail(selectedIndexes: [NSIndexPath]) {
+        
+        // Abort if there are no email accounts on this device.
+        if !MFMailComposeViewController.canSendMail() {
+            let userInfo = [NSLocalizedDescriptionKey : "This device is not set up to send email."]
+            let error = NSError(errorDomain: .PhotoStore, errorCode: .FeatureUnavailable, userInfo: userInfo)
+            error.showAlertWithTitle("Export via email", parentViewController: self)
+            return
+        }
+  
+        // Find all the stereograms we requested for export.
+        var error: NSError?
+        var allImages = Array<Stereogram.ExportData>()
+        loop: for stereogram in selectedIndexes.map({ self._photoStore.stereogramAtIndex($0.indexAtPosition(1)) }) {
+            switch stereogram.exportData() {
+            case .Error(let err):
+                error = err
+                break loop  // Stop on the first error, to avoid swamping the user with alerts.
+            case .Success(let exportData):
+                allImages.append(exportData.value)
+            }
+        }
+
+        if let err = error {
+            err.showAlertWithTitle("Error exporting to email", parentViewController: self)
+            return
+        }
+        
+        // Present a mail compose view with the images as attachments.
+        
+        let mailVC = MFMailComposeViewController()
+        mailVC.mailComposeDelegate = self
+        mailVC.setSubject("Exported Stereograms.")
+        let mainText = (selectedIndexes.count != 1
+            ? "Here are \(selectedIndexes.count) images exported from Stereogram."
+            : "Here is an image exported from Stereogram.")
+        let bodyText = String(format: emailBodyTemplate, arguments: [mainText, NSDate().description])
+        mailVC.setMessageBody(bodyText, isHTML:true)
+       
+        for (index, (stereogramData, mimeType)) in EnumerateGenerator(allImages.generate()) {
+            mailVC.addAttachmentData(stereogramData, mimeType: mimeType, fileName: "Image\(index + 1)")
+        }
+        presentViewController(mailVC,  animated:true, completion:nil)
+
         // Now stop editing, which will deselect all the items.
         setEditing(false, animated: true)
     }

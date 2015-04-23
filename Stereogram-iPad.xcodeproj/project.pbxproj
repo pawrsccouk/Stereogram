@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		572A54FE1AE7FC97005B4375 /* UIImage+Representations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 572A54FD1AE7FC97005B4375 /* UIImage+Representations.swift */; };
 		57503BB01A62D3A000648FA1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BAF1A62D3A000648FA1 /* AppDelegate.swift */; };
 		57503BB21A62D3A000648FA1 /* PhotoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BB11A62D3A000648FA1 /* PhotoViewController.swift */; };
 		57503BB71A62D3A000648FA1 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 57503BB61A62D3A000648FA1 /* Images.xcassets */; };
@@ -44,6 +45,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		572A54FD1AE7FC97005B4375 /* UIImage+Representations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+Representations.swift"; sourceTree = "<group>"; };
 		57503BAA1A62D3A000648FA1 /* Stereogram-iPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Stereogram-iPad.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		57503BAE1A62D3A000648FA1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		57503BAF1A62D3A000648FA1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -122,6 +124,7 @@
 				57503BD11A62D48700648FA1 /* Result.swift */,
 				57503BAF1A62D3A000648FA1 /* AppDelegate.swift */,
 				57A1E67B1A69C84800B97F60 /* NSError+Alert.swift */,
+				572A54FD1AE7FC97005B4375 /* UIImage+Representations.swift */,
 				57503BB61A62D3A000648FA1 /* Images.xcassets */,
 				57503BB81A62D3A000648FA1 /* LaunchScreen.xib */,
 				57503BAD1A62D3A000648FA1 /* Supporting Files */,
@@ -313,6 +316,7 @@
 				57A1E6761A67C20A00B97F60 /* CameraOverlayViewController.swift in Sources */,
 				57503BD21A62D48700648FA1 /* Result.swift in Sources */,
 				57503BD91A630DF100648FA1 /* UIImage+RoundedCorner.swift in Sources */,
+				572A54FE1AE7FC97005B4375 /* UIImage+Representations.swift in Sources */,
 				57A1E67E1A69CA1500B97F60 /* FullImageViewController.swift in Sources */,
 				57503BD51A62EACD00648FA1 /* UIImage+Resize.swift in Sources */,
 				57503BB01A62D3A000648FA1 /* AppDelegate.swift in Sources */,

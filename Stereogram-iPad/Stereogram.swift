@@ -157,6 +157,13 @@ class Stereogram: NSObject {
         }
     }
     
+    /// The MIME type for the image that stereogramImage will generate. 
+    ///
+    /// This is based on the viewing method. Use to represent the image when saving.
+    var mimeType: String {
+        return viewingMethod == ViewMode.AnimatedGIF ? "image/gif" : "image/jpeg"
+    }
+    
     override var description: String {
         return "\(super.description) <BaseURL: \(_baseURL), Properties: \(_propertyList)>"
     }
@@ -240,6 +247,39 @@ class Stereogram: NSObject {
             }
         }
         return ResultOf(_stereogramImage!)
+    }
+    
+    /// Alias for a string representing a MIME Type (e.g. "image/jpeg")
+    typealias MIMEType = String
+    
+    /// Data format when returning data for exporting a stereogram
+    typealias ExportData = (NSData, MIMEType)
+    
+    /// Returns the stereogram image in a format for sending outside this application. 
+    ///
+    /// :returns: .Success(ExportData) or .Error(NSError)
+    ///
+    /// ExportData is a tuple: The data representing the image, and a MIME type indicating the format of the data.
+    
+    func exportData() -> ResultOf<ExportData> {
+        return stereogramImage().map { (image) -> ResultOf<ExportData> in
+            let data: NSData
+            let mimeType: MIMEType
+            if self.viewingMethod == .AnimatedGIF {
+                mimeType = "image/gif"
+                data = image.GIFData
+            } else {
+                mimeType = "image/jpeg"
+                data = image.JPEGData
+            }
+            return ResultOf((data, mimeType))
+        }
+    }
+    
+    func UIImageGIFRepresentation(image: UIImage) -> NSData {
+        // TODO: Replace with actual animated GIF exporting function
+        NSLog("Export to animated GIF not implemented yet")
+        return UIImageJPEGRepresentation(image, 1.0)
     }
     
     /// URL of the left image file (computed from the base URL)

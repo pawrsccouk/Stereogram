@@ -23,6 +23,8 @@ public enum ErrorDomain: String { case PhotoStore = "PhotoStore" }
 /// - CouldntCreateStereogram    : Error creating the stereogram object
 /// - InvalidFileFormat          : A problem was found with the format of a stereogram object.
 /// - FileNotFound               : One of the internal files that make up a stereogram is missing.
+/// - FeatureUnavailable         : The device we are running on does not support a requested feature.
+
 public enum ErrorCode : Int {
     case UnknownError             =   1
     
@@ -31,7 +33,8 @@ public enum ErrorCode : Int {
          IndexOutOfBounds              ,
          CouldntCreateStereogram       ,
          InvalidFileFormat             ,
-         FileNotFound
+         FileNotFound                  ,
+         FeatureUnavailable
 }
 
 /// Stores a collection of Stereogram objects.
