@@ -92,7 +92,7 @@ class Stereogram: NSObject {
                 }
             }
             let userInfo = [NSFilePathErrorKey : NSString(string: fullURLPath ?? "<no path>")]
-            return .Error(NSError(errorDomain: ErrorDomain.PhotoStore, errorCode: ErrorCode.FileNotFound, userInfo: userInfo))
+            return .Error(NSError(errorCode:.FileNotFound, userInfo: userInfo))
         }
         
         // if any of the files don't exist, then return an error.
@@ -324,7 +324,7 @@ class Stereogram: NSObject {
                 let userInfo: [String : AnyObject] = [
                     NSLocalizedDescriptionKey : "Invalid image format in file",
                     NSFilePathErrorKey        : leftImageURL.path!]
-                let err = NSError(errorDomain:.PhotoStore, errorCode:.InvalidFileFormat, userInfo:userInfo)
+                let err = NSError(errorCode:.InvalidFileFormat, userInfo:userInfo)
                 return .Error(err)
             }
         }
@@ -430,7 +430,8 @@ class Stereogram: NSObject {
                     }
                     return .Success()
             }
-            return .Error(NSError.unknownError("writeToURL"))
+            return .Error(NSError.unknownErrorWithLocation("Stereogram.writeToURL(_propertyList:leftImage:rightImage:)"
+                ,                                  target: "calling NSData.writeToURL(_:options:error)"))
     }
 
     /// Load a property list stored at URL and return it.
@@ -469,7 +470,8 @@ class Stereogram: NSObject {
                     return .Success()
                 }
         }
-        return .Error(error ?? NSError.unknownError("savePropertyList"))
+        return .Error(error ?? NSError.unknownErrorWithLocation("Stereogram.savePropertyList()"
+            ,                                            target:"NSData.writeToURL(_, options:, error:)"))
     }
     
     

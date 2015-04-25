@@ -31,12 +31,15 @@ class ImageThumbnailCell: UICollectionViewCell {
         selectionOverlayView = sv
     }
 
-    // See if this is needed.
+    /// Initialize from a decoder. Not currently implemented.
     required init(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    /// The image view which will display the main thumbnail image.
     weak var imageView: UIImageView!
+    
+    /// The image view which will display the 'tick' icon if the cell is selected.
     weak var selectionOverlayView: UIImageView!
     
     /// Image which will be displayed in the collection view.
@@ -55,20 +58,15 @@ class ImageThumbnailCell: UICollectionViewCell {
         return "\(superDesc): <imageView=\(imageView), selected=\(selected)>"
     }
     
-    // Track when the cell becomes selected or not, and update the image to show this.
     override var selected: Bool {
+        // Track when the cell becomes selected or not, and update the image to show this.
         didSet {
             selectionOverlayView.image = selected ? ImageThumbnailCell.selectedImage : nil //ImageThumbnailCell.unselectedImage
         }
     }
     
-    // Images which are overlaid on the thumbnail to indicate if it is selected or not.
-    
-    /// Image shown when the cell is selected.
+    /// Image overlaid above the thumbnail when the cell is selected.
     private static let selectedImage   = UIImage(named: "Tick")
-    
-    /// Image shown when the cell is not selected.
-    //private static let unselectedImage = UIImage(named: "Unselected Overlay")
 }
 
 

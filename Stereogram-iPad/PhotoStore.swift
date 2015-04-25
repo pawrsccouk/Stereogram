@@ -204,7 +204,7 @@ public class PhotoStore {
                     }
                 }
         }
-        return .Error(NSError.unknownError("createPhotoFolderURL"))
+        return .Error(NSError.unknownErrorWithTarget(folders, method: "[0]", caller: "createPhotoFolderURL"))
     }
     
     /// Returns true if url exists and points to a directory.

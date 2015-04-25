@@ -34,6 +34,7 @@ class WelcomeViewController : UIViewController, FullImageViewControllerDelegate,
         stereogramViewController.delegate = self
     }
     
+    /// Initialize from a decoder. Not implemented.
     required init(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -89,11 +90,11 @@ class WelcomeViewController : UIViewController, FullImageViewControllerDelegate,
     
     func stereogramViewController(controller: StereogramViewController
         ,       createdStereogram stereogram: Stereogram) {
-        controller.reset()
-        controller.dismissViewControllerAnimated(false) {
-            // Once the stereogram view has disappeared, display the FullImage view to allow the user to keep or reject the requested image.
-            self.showApprovalWindowForStereogram(stereogram)
-        }
+            controller.reset()
+            controller.dismissViewControllerAnimated(false) {
+                // Once the stereogram view has disappeared, display the FullImage view to allow the user to keep or reject the requested image.
+                self.showApprovalWindowForStereogram(stereogram)
+            }
     }
     
     func stereogramViewControllerWasCancelled(controller: StereogramViewController) {

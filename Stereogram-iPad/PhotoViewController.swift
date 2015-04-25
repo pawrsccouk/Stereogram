@@ -191,7 +191,7 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
             // Dismiss the view controller window, and if there was an error display it after the main view has been removed.
             dismissViewControllerAnimated(true) {
                 if result.value == MFMailComposeResultFailed.value {
-                    let err = error ?? NSError.unknownError("MFMailComposeViewController")
+                    let err = error ?? NSError.unknownErrorWithLocation("MFMailComposeViewController callback.")
                     err.showAlertWithTitle("Error sending mail", parentViewController: self)
                 }
             }
@@ -287,7 +287,7 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
         // Abort if there are no email accounts on this device.
         if !MFMailComposeViewController.canSendMail() {
             let userInfo = [NSLocalizedDescriptionKey : "This device is not set up to send email."]
-            let error = NSError(errorDomain: .PhotoStore, errorCode: .FeatureUnavailable, userInfo: userInfo)
+            let error = NSError(errorCode: .FeatureUnavailable, userInfo: userInfo)
             error.showAlertWithTitle("Export via email", parentViewController: self)
             return
         }

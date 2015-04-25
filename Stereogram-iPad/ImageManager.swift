@@ -8,8 +8,6 @@
 
 import UIKit
 
-private let defaultError = NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.UnknownError.rawValue, userInfo: [NSLocalizedDescriptionKey : "Unknown Error"])
-
 /// A collection of functions for handling images.
 class ImageManager {
     
@@ -21,8 +19,8 @@ class ImageManager {
         var error: NSError?
         let data = NSData(contentsOfFile:filePath, options:.allZeros, error:&error)
         if data == nil {
-            if error == nil { error = defaultError }
-            return .Error(error!)
+            return .Error(error ?? NSError.unknownErrorWithLocation("ImageManager.imageFromFile(_)"
+                ,                                            target:"NSData(contentsOfFile:options:error)"))
         }
         
         let img = UIImage(data:data!)
@@ -87,9 +85,12 @@ class ImageManager {
             : CGRectMake(image.size.width / 2.0, 0, image.size.width / 2.0, image.size.height )
         
         let imgPartRef = CGImageCreateWithImageInRect(image.CGImage, rectToKeep)
-        if let i = UIImage(CGImage:imgPartRef) { return ResultOf(i) }
-        let userInfo = [NSLocalizedDescriptionKey : "Unable to create thumbnail. Unknown error."]
-        return .Error(NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.UnknownError.rawValue, userInfo: userInfo))
+        if let i = UIImage(CGImage:imgPartRef) {
+            return ResultOf(i)
+        }
+        else {
+            return .Error(NSError.unknownErrorWithLocation("getHalfOfImage(_, whichHalf:)"
+                ,                                   target:"CGImageCreateWithImageInRect()"))
+        }
     }
-
 }
