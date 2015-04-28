@@ -32,6 +32,22 @@
 		57B41CC71A738D500002FB5E /* PhotoView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57B41CC61A738D500002FB5E /* PhotoView.xib */; };
 		57B41CC91A739A760002FB5E /* WelcomeView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57B41CC81A739A760002FB5E /* WelcomeView.xib */; };
 		57B41CCB1A739ADD0002FB5E /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57B41CCA1A739ADD0002FB5E /* WelcomeViewController.swift */; };
+		57E1F9E11AEFF2BC00CF92C0 /* NSFileManager+SwiftSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E1F9E01AEFF2BC00CF92C0 /* NSFileManager+SwiftSupport.swift */; };
+		57E1F9E21AEFF42800CF92C0 /* NSFileManager+SwiftSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E1F9E01AEFF2BC00CF92C0 /* NSFileManager+SwiftSupport.swift */; };
+		57E1F9E41AEFFCBE00CF92C0 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 57E1F9E31AEFFCBE00CF92C0 /* Media.xcassets */; };
+		57E651061AEFCF8F00BA1360 /* PhotoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BCF1A62D42E00648FA1 /* PhotoStore.swift */; };
+		57E651071AEFD0E200BA1360 /* ThumbnailCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E68B1A6F3BCC00B97F60 /* ThumbnailCache.swift */; };
+		57E651081AEFD0E700BA1360 /* ImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E68D1A6F3F8200B97F60 /* ImageManager.swift */; };
+		57E651091AEFD0EA00BA1360 /* Stereogram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579DA0D21AE4159D0079DC8C /* Stereogram.swift */; };
+		57E6510A1AEFD0F200BA1360 /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BD11A62D48700648FA1 /* Result.swift */; };
+		57E6510B1AEFD10400BA1360 /* NSError+Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E67B1A69C84800B97F60 /* NSError+Alert.swift */; };
+		57E6510C1AEFDE0D00BA1360 /* UIImage+Resize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BD41A62EACD00648FA1 /* UIImage+Resize.swift */; };
+		57E6510D1AEFDE1100BA1360 /* UIImage+Alpha.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BD61A63001D00648FA1 /* UIImage+Alpha.swift */; };
+		57E6510E1AEFDE1500BA1360 /* UIImage+RoundedCorner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BD81A630DF100648FA1 /* UIImage+RoundedCorner.swift */; };
+		57E6510F1AEFDE1E00BA1360 /* UIImage+Representations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 572A54FD1AE7FC97005B4375 /* UIImage+Representations.swift */; };
+		57E651131AEFE5CF00BA1360 /* PhotoStore 1 Directory in Resources */ = {isa = PBXBuildFile; fileRef = 57E651101AEFE5CF00BA1360 /* PhotoStore 1 Directory */; };
+		57E651141AEFE5CF00BA1360 /* PhotoStore 2 Directory in Resources */ = {isa = PBXBuildFile; fileRef = 57E651111AEFE5CF00BA1360 /* PhotoStore 2 Directory */; };
+		57E651151AEFE5CF00BA1360 /* PhotoStore Empty Directory in Resources */ = {isa = PBXBuildFile; fileRef = 57E651121AEFE5CF00BA1360 /* PhotoStore Empty Directory */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,6 +91,11 @@
 		57B41CC61A738D500002FB5E /* PhotoView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PhotoView.xib; sourceTree = "<group>"; };
 		57B41CC81A739A760002FB5E /* WelcomeView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = WelcomeView.xib; sourceTree = "<group>"; };
 		57B41CCA1A739ADD0002FB5E /* WelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
+		57E1F9E01AEFF2BC00CF92C0 /* NSFileManager+SwiftSupport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSFileManager+SwiftSupport.swift"; sourceTree = "<group>"; };
+		57E1F9E31AEFFCBE00CF92C0 /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
+		57E651101AEFE5CF00BA1360 /* PhotoStore 1 Directory */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "PhotoStore 1 Directory"; path = "../../../Objective-C/Stereogram/Stereogram/Stereogram Unit Tests/Resources/PhotoStore 1 Directory"; sourceTree = "<group>"; };
+		57E651111AEFE5CF00BA1360 /* PhotoStore 2 Directory */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "PhotoStore 2 Directory"; path = "../../../Objective-C/Stereogram/Stereogram/Stereogram Unit Tests/Resources/PhotoStore 2 Directory"; sourceTree = "<group>"; };
+		57E651121AEFE5CF00BA1360 /* PhotoStore Empty Directory */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "PhotoStore Empty Directory"; path = "../../../Objective-C/Stereogram/Stereogram/Stereogram Unit Tests/Resources/PhotoStore Empty Directory"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,6 +144,7 @@
 				57A1E6881A6C8AA600B97F60 /* Controllers */,
 				57503BD11A62D48700648FA1 /* Result.swift */,
 				57503BAF1A62D3A000648FA1 /* AppDelegate.swift */,
+				57E1F9E01AEFF2BC00CF92C0 /* NSFileManager+SwiftSupport.swift */,
 				57A1E67B1A69C84800B97F60 /* NSError+Alert.swift */,
 				572A54FD1AE7FC97005B4375 /* UIImage+Representations.swift */,
 				57503BB61A62D3A000648FA1 /* Images.xcassets */,
@@ -152,7 +174,11 @@
 		57503BC31A62D3A000648FA1 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				57E651101AEFE5CF00BA1360 /* PhotoStore 1 Directory */,
+				57E651111AEFE5CF00BA1360 /* PhotoStore 2 Directory */,
+				57E651121AEFE5CF00BA1360 /* PhotoStore Empty Directory */,
 				57503BC41A62D3A000648FA1 /* Info.plist */,
+				57E1F9E31AEFFCBE00CF92C0 /* Media.xcassets */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -296,6 +322,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				57E651151AEFE5CF00BA1360 /* PhotoStore Empty Directory in Resources */,
+				57E651141AEFE5CF00BA1360 /* PhotoStore 2 Directory in Resources */,
+				57E1F9E41AEFFCBE00CF92C0 /* Media.xcassets in Resources */,
+				57E651131AEFE5CF00BA1360 /* PhotoStore 1 Directory in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -310,6 +340,7 @@
 				57A1E6921A71713300B97F60 /* StereogramViewController.swift in Sources */,
 				57503BB21A62D3A000648FA1 /* PhotoViewController.swift in Sources */,
 				579DA0D31AE4159D0079DC8C /* Stereogram.swift in Sources */,
+				57E1F9E11AEFF2BC00CF92C0 /* NSFileManager+SwiftSupport.swift in Sources */,
 				57A1E6901A716B9700B97F60 /* CollectionViewThumbnailProvider.swift in Sources */,
 				57503BD01A62D42E00648FA1 /* PhotoStore.swift in Sources */,
 				57B41CCB1A739ADD0002FB5E /* WelcomeViewController.swift in Sources */,
@@ -331,7 +362,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				57E6510F1AEFDE1E00BA1360 /* UIImage+Representations.swift in Sources */,
+				57E6510E1AEFDE1500BA1360 /* UIImage+RoundedCorner.swift in Sources */,
+				57E6510B1AEFD10400BA1360 /* NSError+Alert.swift in Sources */,
+				57E6510D1AEFDE1100BA1360 /* UIImage+Alpha.swift in Sources */,
+				57E1F9E21AEFF42800CF92C0 /* NSFileManager+SwiftSupport.swift in Sources */,
+				57E6510A1AEFD0F200BA1360 /* Result.swift in Sources */,
+				57E651061AEFCF8F00BA1360 /* PhotoStore.swift in Sources */,
 				57503BC61A62D3A000648FA1 /* Stereogram_iPadTests.swift in Sources */,
+				57E651071AEFD0E200BA1360 /* ThumbnailCache.swift in Sources */,
+				57E6510C1AEFDE0D00BA1360 /* UIImage+Resize.swift in Sources */,
+				57E651081AEFD0E700BA1360 /* ImageManager.swift in Sources */,
+				57E651091AEFD0EA00BA1360 /* Stereogram.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -369,7 +369,6 @@ class PhotoViewController : UIViewController, UICollectionViewDelegate, FullImag
             let message = formatDeleteMessage(UInt(indexPaths.count))
             let alertController = UIAlertController(title: "Confirm deletion", message: message, preferredStyle: .Alert)
             alertController.addAction(UIAlertAction(title: "Delete", style: UIAlertActionStyle.Destructive) { (action) in
-                NSLog("Deleting images at index paths: \(indexPaths)")
                 self._photoStore.deleteStereogramsAtIndexPaths(indexPaths).onError() {
                     $0.showAlertWithTitle("Error deleting photos", parentViewController: self)
                 }

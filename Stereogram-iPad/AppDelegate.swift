@@ -12,43 +12,56 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    //var photoViewController = PhotoViewController()
     var photoStore: PhotoStore!
 
-    func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+    func application(                     application: UIApplication
+        , didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
         
         window = UIWindow(frame: UIScreen.mainScreen().bounds)
-        
         if let w = window {
             
-            // Initialise the photo store, and capture any errors it returns.
-            var error: NSError?
-            photoStore = PhotoStore(error: &error)
-            if photoStore != nil {
-                
-                let photoViewController = PhotoViewController(photoStore: photoStore)
+            /// Create a photo store using the provided URL.
+            func createPhotoStore(url: NSURL) -> ResultOf<PhotoStore> {
+                var error: NSError?
+                if let store = PhotoStore(rootDirectory: url, error: &error) {
+                    return ResultOf(store)
+                }
+                return .Error(error!)
+            }
+            
+            /// Create view controllers using the provided photo store.
+            func createControllers(store: PhotoStore) ->Result {
+                let photoViewController = PhotoViewController(photoStore: store)
                 let navigationController = UINavigationController(rootViewController: photoViewController)
                 
                 // If photoStore is empty after creation, push a special view controller which doesn't have a collection view, but instead has some welcome text.
                 // When the user takes the first photo, pop that welcome view controller to reveal the standard collection view.
-                if photoStore.count == 0 {
-                    let welcomeViewController = WelcomeViewController(photoStore: photoStore)
+                if store.count == 0 {
+                    let welcomeViewController = WelcomeViewController(photoStore: store)
                     navigationController.pushViewController(welcomeViewController, animated: false)
                 }
                 
                 w.rootViewController = navigationController
                 w.backgroundColor = UIColor.whiteColor()
-                
-            } else {
-                if error == nil {
-                    error = NSError(domain: ErrorDomain.PhotoStore.rawValue, code: ErrorCode.CouldntCreateSharedStore.rawValue, userInfo: [NSLocalizedDescriptionKey : "Unknown error"])
-                }
-                let alertController = UIAlertController(title: "", message: error!.localizedDescription, preferredStyle: UIAlertControllerStyle.Alert)
-                alertController.addAction(UIAlertAction(title: "Exit", style: UIAlertActionStyle.Default) { action in
-                    fatalError("Error \(error) caused this application to terminate")
-                })
+                return .Success()
+            }
+            
+            // Attempt to create the photo store and controllers, and return the result.
+            let result = AppDelegate.createPhotoFolderURL().map(createPhotoStore).map0(createControllers)
+            switch result {
+            case .Error(let error):
+                let alertController = UIAlertController(title: ""
+                    ,                                 message: error.localizedDescription
+                    ,                          preferredStyle: UIAlertControllerStyle.Alert)
+                let action = UIAlertAction(title: "Exit"
+                    ,                      style: UIAlertActionStyle.Default) { action in
+                        fatalError("Error \(error) caused this application to terminate")
+                    }
+                alertController.addAction(action)
                 w.rootViewController = alertController
+            default:
+                break
             }
             w.makeKeyAndVisible()
         }
@@ -108,6 +121,51 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NSLog("applicationWillTerminate:")
     }
 
+    /// Creates the global photos folder if it doesn't already exist.
+    ///
+    /// :returns: The folder path once set up.
+    ///
+    /// You should call this only once during setup.
+    private class func createPhotoFolderURL() -> ResultOf<NSURL> {
+        
+        /// Returns true if url exists and points to a directory.
+        ///
+        /// :param: url - A file URL to test.
+        /// :returns: True if url is a directory, False otherwise.
+        func urlIsDirectory(url: NSURL) -> Bool {
+            var isDirectory = UnsafeMutablePointer<ObjCBool>.alloc(1)
+            isDirectory.initialize(ObjCBool(false))
+            let fileManager = NSFileManager.defaultManager()
+            if let path = url.path {
+                let fileExists = fileManager.fileExistsAtPath(url.path!, isDirectory:isDirectory)
+                let isDir = isDirectory.memory
+                return fileExists && isDir
+            }
+            return false
+        }
+
+        
+        
+        let fileManager = NSFileManager.defaultManager()
+        let folders = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+        if let
+            firstObject: String = folders[0] as? String,
+            rootURL = NSURL(fileURLWithPath:firstObject, isDirectory: true) {
+                let photoDir = rootURL.URLByAppendingPathComponent("Pictures")
+                if urlIsDirectory(photoDir) {
+                    return ResultOf(photoDir)
+                } else {
+                    // If the directory doesn't exist, then let the file manager try and create it.
+                    var error: NSError?
+                    if fileManager.createDirectoryAtURL(photoDir, withIntermediateDirectories:false, attributes:nil, error:&error) {
+                        return ResultOf(photoDir)
+                    } else {
+                        return .Error(error!)
+                    }
+                }
+        }
+        return .Error(NSError.unknownErrorWithTarget(folders, method: "[0]", caller: "createPhotoFolderURL"))
+    }
 
 }
 

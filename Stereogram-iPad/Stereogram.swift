@@ -37,7 +37,7 @@ private let LeftPhotoFileName = "LeftPhoto.jpg", RightPhotoFileName = "RightPhot
 /// It will also respond to memory-full notifications and clear the images, which can be re-calculated or reloaded later. 
 ///
 /// Calculating the main stereogram image can take time, so you can use the reset method, which will clear all the loaded images and then explicitly reload them all. This can be done in a background thread.
-class Stereogram: NSObject {
+public class Stereogram: NSObject {
     
     //MARK: Public class functions.
     
@@ -62,7 +62,6 @@ class Stereogram: NSObject {
                 }
             }
         }
-        NSLog("allStereogramsUnderURL: returned \(stereogramArray.count) stereogram files: \(stereogramArray)")
         return ResultOf(stereogramArray)
     }
     
@@ -116,24 +115,6 @@ class Stereogram: NSObject {
      }
     
     
-    /// Save the images provided to the disk under a specified directory and return a stereogram object referencing them.
-    ///
-    /// :param: lefImage -  The left image in the stereogram.
-    /// :param: rightImage -  The right image in the stereogram.
-    /// :param: baseURL -  The URL to save the stereogram under.
-    /// :returns: A Stereogram object on success, an NSError object on failure.
-    class func stereogramFromLeftImage(leftImage: UIImage
-        ,                             rightImage: UIImage
-        ,                                baseURL: NSURL) -> ResultOf<Stereogram> {
-            let newStereogramURL = getUniqueStereogramURL(baseURL)
-            let propertyList = [String : AnyObject]()
-            switch writeToURL(newStereogramURL, propertyList: propertyList, leftImage: leftImage, rightImage: rightImage) {
-            case .Success:
-                return ResultOf(Stereogram(baseURL: baseURL, propertyList: propertyList))
-            case .Error(let error):
-                return .Error(error)
-            }
-    }
     
 
     // MARK: - Properties
@@ -164,21 +145,46 @@ class Stereogram: NSObject {
         return viewingMethod == ViewMode.AnimatedGIF ? "image/gif" : "image/jpeg"
     }
     
-    override var description: String {
-        return "\(super.description) <BaseURL: \(_baseURL), Properties: \(_propertyList)>"
+    override public var description: String {
+        return "\(super.description) <BaseURL: \(baseURL), Properties: \(_propertyList)>"
     }
     
-    
+    /// URLs to the base directory containing the images. Used to load the images when needed.
+    let baseURL: NSURL
+   
     //MARK: Initializers
 
-    /// Designated Initializer. 
+    /// Initilizes the stereogram from two already-existing images.
+    ///
+    /// Save the images provided to the disk under a specified directory.
+    ///
+    /// :param: leftImage  -  The left image in the stereogram.
+    /// :param: rightImage -  The right image in the stereogram.
+    /// :param: baseURL    -  The URL to save the stereogram under.
+    /// :returns: A Stereogram object on success, nil on failure.
+    
+    public convenience init?(leftImage: UIImage, rightImage: UIImage, baseURL: NSURL, inout error: NSError?) {
+        let newStereogramURL = Stereogram.getUniqueStereogramURL(baseURL)
+        let propertyList = [String : AnyObject]()
+        self.init(baseURL: newStereogramURL, propertyList: propertyList)
+        
+        switch Stereogram.writeToURL(newStereogramURL, propertyList: propertyList, leftImage: leftImage, rightImage: rightImage) {
+        case .Success:
+            break
+        case .Error(let e):
+            error = e
+            return nil
+        }
+    }
+
+    /// Designated Initializer.
     /// Creates a new stereogram object from a URL and a property list.
     ///
     /// :param: baseImageURL File URL pointing to the main directory under which the images are stored.
     /// :param: propertyList A dictionary of default properties for this stereogram
     
-    private init(baseURL: NSURL, propertyList: PropertyDict) {
-        _baseURL = baseURL
+    private init(baseURL url: NSURL, propertyList: PropertyDict) {
+        baseURL = url
         _propertyList = propertyList
         super.init()
         
@@ -276,25 +282,19 @@ class Stereogram: NSObject {
         }
     }
     
-    func UIImageGIFRepresentation(image: UIImage) -> NSData {
-        // TODO: Replace with actual animated GIF exporting function
-        NSLog("Export to animated GIF not implemented yet")
-        return UIImageJPEGRepresentation(image, 1.0)
-    }
-    
     /// URL of the left image file (computed from the base URL)
     var leftImageURL: NSURL {
-        return _baseURL.URLByAppendingPathComponent(LeftPhotoFileName)
+        return baseURL.URLByAppendingPathComponent(LeftPhotoFileName)
     }
     
     /// URL of the right image file (computed from the base URL)
     var rightImageURL: NSURL {
-        return _baseURL.URLByAppendingPathComponent(RightPhotoFileName)
+        return baseURL.URLByAppendingPathComponent(RightPhotoFileName)
     }
     
     /// URL of the property list file (computed from the base URL)
     var propertiesURL: NSURL {
-        return _baseURL.URLByAppendingPathComponent(PropertyListFileName)
+        return baseURL.URLByAppendingPathComponent(PropertyListFileName)
     }
     
     /// Return a thumbnail image, caching it if necessary.
@@ -335,7 +335,6 @@ class Stereogram: NSObject {
     ///
     /// :returns: Success or an NSError object on failure.
     func refresh() -> Result {
-        NSLog("Refreshing stereogram \(self)")
         _thumbnailImage = nil
         _stereogramImage = nil
         _leftImage = nil
@@ -348,9 +347,8 @@ class Stereogram: NSObject {
     /// :returns: Success or an NSError object on failure.
     func deleteFromDisk() -> Result {
         var error: NSError?
-        NSLog("Deleting \(_baseURL)")
         let fileManager = NSFileManager.defaultManager()
-        let success = fileManager.removeItemAtURL(_baseURL, error:&error)
+        let success = fileManager.removeItemAtURL(baseURL, error:&error)
         if success {
             _thumbnailImage = nil
             _stereogramImage = nil
@@ -363,10 +361,7 @@ class Stereogram: NSObject {
     
     
     //MARK: Private Data
-    
-    /// URLs to the base directory containing the images. Used to load the images when needed.
-    private let _baseURL: NSURL
-    
+
     /// Properties file for each stereogram. Probably not cached, just load them when we open the object.
     private var _propertyList: PropertyDict
     
@@ -388,7 +383,6 @@ class Stereogram: NSObject {
         ,                   leftImage: UIImage
         ,                  rightImage: UIImage) -> Result {
             
-            NSLog("writeToURL: url = \(url)")
             assert(url.path != nil, "URL \(url) has an invalid path")
             
             // Save the left and right images, and the property list into the directory specified by URL.

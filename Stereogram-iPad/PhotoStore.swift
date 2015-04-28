@@ -38,22 +38,49 @@ public enum ErrorCode : Int {
 }
 
 /// Stores a collection of Stereogram objects.
-public class PhotoStore {
+public class PhotoStore : SequenceType {
+    
+    public struct Generator : GeneratorType {
+        public typealias Element = Stereogram
+        var _array: [Stereogram]
+        var _index: Int
+        
+        // MARK: Initializers
+        init(array: [Stereogram]) {
+            _array = array
+            _index = array.startIndex
+        }
+        // MARK: Methods
+        mutating public func next() -> Element? {
+            var st: Stereogram?
+            if _index < _array.endIndex {
+                st = _array[_index++]
+            }
+            return st
+        }
+    }
+    
+    
+    // MARK: - Initializers
     
     /// Designated initializer. Attempts to create the store and returns an error if it fails.
     ///
+    /// :param: rootDirectory - File URL to a directory which will hold the stereograms.
     /// :param: error - An error object which holds the issue if the constructor fails.
-    public init? (inout error: NSError?) {
-        // Create the photo folder. Log an error if it fails and abort.
-        switch PhotoStore.createPhotoFolderURL() {
-        case .Success(let p):
-            _photoFolderURL = p.value
-        case .Error(let e):
-            NSLog("Error creating photo folder: \(e)")
-            error = e
-            _photoFolderURL = NSURL()
+    
+    public init? (rootDirectory: NSURL, inout error: NSError?) {
+        
+            
+        _photoFolderURL = rootDirectory
+        
+        // Ensure _photoFolderURL is a valid folder URL.
+        if !NSFileManager.defaultManager().URLIsDirectory(_photoFolderURL) {
+            error = NSError(errorCode: ErrorCode.CouldntCreateSharedStore, userInfo: [
+                NSFilePathErrorKey        : rootDirectory,
+                NSLocalizedDescriptionKey : "Couldn't open directory."])
             return nil
         }
+        
         // Now find and load all the streograms under that URL.
         switch Stereogram.allStereogramsUnderURL(_photoFolderURL) {
         case .Success(let result):
@@ -65,12 +92,19 @@ public class PhotoStore {
     }
     
 
-    // MARK: - Stereogram Storage
+    // MARK: Stereogram Storage
     
     /// Number of stereograms stored in here.
     var count: Int {
         return _stereograms.count
     }
+    
+    /// Function returning a generator, so you can use this object in foreach loops.
+    public func generate() -> Generator {
+        return Generator(array: _stereograms);
+    }
+    
+    
     
     /// Create a new stereogram on disk using the images provided, then add it to the collection and return it
     ///
@@ -78,13 +112,12 @@ public class PhotoStore {
     /// :param: rightImage - The right-hand image
     /// :returns: A Stereogram object on success, or an error on failure
     func createStereogramFromLeftImage(leftImage: UIImage, rightImage: UIImage) -> ResultOf<Stereogram> {
-        let result = Stereogram.stereogramFromLeftImage(leftImage, rightImage: rightImage, baseURL: _photoFolderURL)
-        switch result {
-        case .Success(let s):
-            addStereogram(s.value)
-        default: break
+        var error: NSError?
+        if let stereogram = Stereogram(leftImage: leftImage, rightImage: rightImage, baseURL: _photoFolderURL, error: &error) {
+            addStereogram(stereogram)
+            return ResultOf(stereogram)
         }
-        return result
+        return .Error(error!)
     }
     
     /// Adds a stereogram to the collection.
@@ -178,49 +211,4 @@ public class PhotoStore {
     
     /// Path to where we are keeping the photos.
     private let _photoFolderURL: NSURL
-    
-    
-    /// Creates the global photos folder if it doesn't already exist.
-    ///
-    /// :returns: The folder path once set up.
-    ///
-    /// You should call this only once during setup.
-    private class func createPhotoFolderURL() -> ResultOf<NSURL> {
-        let fileManager = NSFileManager.defaultManager()
-        let folders = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
-        if let
-            firstObject: String = folders[0] as? String,
-            rootURL = NSURL(fileURLWithPath:firstObject, isDirectory: true) {
-                let photoDir = rootURL.URLByAppendingPathComponent("Pictures")
-                if PhotoStore.urlIsDirectory(photoDir) {
-                    return ResultOf(photoDir)
-                } else {
-                    // If the directory doesn't exist, then let the file manager try and create it.
-                    var error: NSError?
-                    if fileManager.createDirectoryAtURL(photoDir, withIntermediateDirectories:false, attributes:nil, error:&error) {
-                        return ResultOf(photoDir)
-                    } else {
-                        return .Error(error!)
-                    }
-                }
-        }
-        return .Error(NSError.unknownErrorWithTarget(folders, method: "[0]", caller: "createPhotoFolderURL"))
-    }
-    
-    /// Returns true if url exists and points to a directory.
-    ///
-    /// :param: url - A file URL to test.
-    /// :returns: True if url is a directory, False otherwise.
-    private class func urlIsDirectory(url: NSURL) -> Bool {
-        var isDirectory = UnsafeMutablePointer<ObjCBool>.alloc(1)
-        isDirectory.initialize(ObjCBool(false))
-        let fileManager = NSFileManager.defaultManager()
-        if let path = url.path {
-            let fileExists = fileManager.fileExistsAtPath(url.path!, isDirectory:isDirectory)
-            let isDir = isDirectory.memory
-            return fileExists && isDir
-        }
-        return false
-    }
-    
 }

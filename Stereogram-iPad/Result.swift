@@ -149,6 +149,24 @@ public func alwaysOk<T>(fnc: (t: T) -> Void) -> ((t: T) -> Result) {
     }
 }
 
+/// Similar to the map() methods on each result object, but more readable for outside observers.
+///
+/// :param: functions Array of functions which all take a type and return a ResultOf the same type.
+/// :returns: The error if any failed, success and the final value if any succeeded.
+
+public func map<T>(functions: [(T)->ResultOf<T>], first: T) -> ResultOf<T> {
+    var res = first
+    for f: (T)->ResultOf in functions {
+        switch f(res) {
+        case .Error(let e):
+            return .Error(e)
+        case .Success(let v):
+            res = v.value
+        }
+    }
+    return ResultOf(res)
+}
+
 /// Given two values of type ResultOf<T>, if both are successful, return the results as a tuple.
 /// If either fails, then return the error.
 
