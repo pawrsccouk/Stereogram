@@ -173,12 +173,13 @@ public class PhotoStore : SequenceType {
  
     /// Overwrites the image at the given position with a new image.
     ///
-    /// :param: index - The index of the stereogram to replace in the collection.
-    /// :param: stereogram - The new stereogram replacing the one at index.
+    /// :param: index          - The index of the stereogram to replace in the collection.
+    /// :param: stereogram     - The new stereogram replacing the one at index.
     /// :returns: An error if there is no image at index already, or if the replacement failed. Otherwise success.
     ///
-    /// NB: This deletes the old stereogram from the disk as well as removing it from the collection. 
-    /// The stereogram object is invalid after this method returns successfully.
+    /// NB: The stereogram object is invalid after this method returns successfully. You should not use it once it has been deleted.
+    /// If you want to swap the stereogram between Photo stores, then you will need to physically move the files instead of just the stereogram objects as each photo store will expect it's stereograms to be located under it's base URL. So don't use this method for that.
+
     func replaceStereogramAtIndex(index: Int, withStereogram newStereogram: Stereogram) -> Result {
         let stereogramToGo = _stereograms[index]
         if stereogramToGo != newStereogram {
