@@ -48,6 +48,60 @@ public class Stereogram: NSObject {
     
     class func allStereogramsUnderURL(url: NSURL) -> ResultOf<[Stereogram]> {
         let fileManager = NSFileManager.defaultManager()
+       
+        /// Initialize this object by loading image data from the specified URL.
+        ///
+        /// :param: url -  A File URL pointing to the root directory of a stereogram object
+        /// :returns: A Stereogram object on success or an NSError object on failure.
+        
+        func stereogramFromURL(url: NSURL) -> ResultOf<Stereogram> {
+            // URL should be pointing to a directory. Inside this there should be 3 files: LeftImage.jpg, RightImage.jpg, Properties.plist. Return an error if any of these are missing. Also load the properties file.
+            
+            /// Checks if a file exists given a base directory URL and filename.
+            ///
+            /// :param: baseURL The Base URL to look in.
+            /// :param: fileName The name of the file to check for.
+            /// :returns: .Success if the file was present, .Error(NSError) if it was not.
+            
+            func fileExists(baseURL: NSURL, fileName: String) -> Result {
+                let fullURLPath = baseURL.URLByAppendingPathComponent(fileName).path
+                if let fullPath = fullURLPath {
+                    if fileManager.fileExistsAtPath(fullPath) {
+                        return .Success()
+                    }
+                }
+                let userInfo = [NSFilePathErrorKey : NSString(string: fullURLPath ?? "<no path>")]
+                return .Error(NSError(errorCode:.FileNotFound, userInfo: userInfo))
+            }
+            
+            
+            
+            
+            let defaultPropertyDict: PropertyDict = [kViewingMethod : ViewMode.Crosseyed.rawValue]
+            
+            
+            // if any of the files don't exist, then return an error.
+            let result = and([
+                fileExists(url, LeftPhotoFileName),
+                fileExists(url, RightPhotoFileName),
+                fileExists(url, PropertyListFileName)])
+            if let err = result.error {
+                return .Error(err)
+            }
+            
+            // Load the property list at the given URL.
+            var propertyList = defaultPropertyDict
+            switch loadPropertyList(url.URLByAppendingPathComponent(PropertyListFileName)) {
+            case .Success(let propList):
+                propertyList = propList.value
+            case .Error(let error):
+                return .Error(error)
+            }
+            return ResultOf(Stereogram(baseURL: url, propertyList: propertyList))
+        }
+        
+        
+        
         var stereogramArray = [Stereogram]()
         var error: NSError?
         if let
@@ -65,54 +119,6 @@ public class Stereogram: NSObject {
         return ResultOf(stereogramArray)
     }
     
-    
-    /// Initialize this object by loading image data from the specified URL.
-    ///
-    /// :param: url -  A File URL pointing to the root directory of a stereogram object
-    /// :returns: A Stereogram object on success or an NSError object on failure.
-    
-    class func stereogramFromURL(url: NSURL) -> ResultOf<Stereogram> {
-        // URL should be pointing to a directory. Inside this there should be 3 files: LeftImage.jpg, RightImage.jpg, Properties.plist. Return an error if any of these are missing. Also load the properties file.
-        
-        let manager = NSFileManager.defaultManager()
-        let defaultPropertyDict: PropertyDict = [kViewingMethod : ViewMode.Crosseyed.rawValue]
-        
-        /// Checks if a file exists given a base directory URL and filename.
-        ///
-        /// :param: baseURL The Base URL to look in.
-        /// :param: fileName The name of the file to check for.
-        /// :returns: .Success if the file was present, .Error(NSError) if it was not.
-        
-        var fileExists = { (baseURL: NSURL, fileName: String) -> Result in
-            let fullURLPath = baseURL.URLByAppendingPathComponent(fileName).path
-            if let fullPath = fullURLPath {
-                if manager.fileExistsAtPath(fullPath) {
-                    return .Success()
-                }
-            }
-            let userInfo = [NSFilePathErrorKey : NSString(string: fullURLPath ?? "<no path>")]
-            return .Error(NSError(errorCode:.FileNotFound, userInfo: userInfo))
-        }
-        
-        // if any of the files don't exist, then return an error.
-        let result = and([
-            fileExists(url, LeftPhotoFileName),
-            fileExists(url, RightPhotoFileName),
-            fileExists(url, PropertyListFileName)])
-        if let err = result.error {
-            return .Error(err)
-        }
-        
-        // Load the property list at the given URL.
-        var propertyList = defaultPropertyDict
-        switch loadPropertyList(url.URLByAppendingPathComponent(PropertyListFileName)) {
-        case .Success(let propList):
-            propertyList = propList.value
-        case .Error(let error):
-            return .Error(error)
-        }
-        return ResultOf(Stereogram(baseURL: url, propertyList: propertyList))
-     }
     
     
     
@@ -133,8 +139,13 @@ public class Stereogram: NSObject {
             return viewMode ?? .Crosseyed
         }
         set {
-            _propertyList[kViewingMethod] = newValue.rawValue
-            savePropertyList()
+            if self.viewingMethod != newValue {
+                _propertyList[kViewingMethod] = newValue.rawValue
+                savePropertyList()
+                // Delete any cached images so they are recreated with the new viewing method.
+                _stereogramImage = nil
+                _thumbnailImage = nil
+            }
         }
     }
     
@@ -188,8 +199,6 @@ public class Stereogram: NSObject {
         _propertyList = propertyList
         super.init()
         
-        _leftImage = nil
-        _rightImage = nil
         _thumbnailImage = nil
         _stereogramImage = nil
         
@@ -214,22 +223,21 @@ public class Stereogram: NSObject {
             return ResultOf(_stereogramImage!)
         }
         // Get the left and right images, loading them if they are not in cache.
-        if _leftImage == nil {
-            switch loadImage(.Left) {
-            case .Error(let error): return .Error(error)
-            case .Success(let result): _leftImage = result.value
-            }
-        }
-
-        if _rightImage == nil {
-            switch loadImage(.Right) {
-            case .Error(let error): return .Error(error)
-            case .Success(let result): _rightImage = result.value
-            }
+        var leftImage: UIImage?
+        switch loadImage(.Left) {
+        case .Error(let error): return .Error(error)
+        case .Success(let result): leftImage = result.value
         }
         
+        var rightImage: UIImage?
+        switch loadImage(.Right) {
+        case .Error(let error): return .Error(error)
+        case .Success(let result): rightImage = result.value
+        }
+    
         // Create the stereogram image, cache it and return it.
-        if let left = _leftImage, right = _rightImage {
+        assert(leftImage != nil && rightImage != nil, "Failed to load images: Left <\(leftImage)> or Right <\(rightImage)>")
+        if let left = leftImage, right = rightImage {
             
             switch (self.viewingMethod) {
             case .Crosseyed:
@@ -337,8 +345,6 @@ public class Stereogram: NSObject {
     func refresh() -> Result {
         _thumbnailImage = nil
         _stereogramImage = nil
-        _leftImage = nil
-        _rightImage = nil
         return and(thumbnailImage().result, stereogramImage().result)
     }
     
@@ -352,8 +358,6 @@ public class Stereogram: NSObject {
         if success {
             _thumbnailImage = nil
             _stereogramImage = nil
-            _leftImage = nil
-            _rightImage = nil
             return .Success()
         }
         return .Error(error!)
@@ -366,7 +370,8 @@ public class Stereogram: NSObject {
     private var _propertyList: PropertyDict
     
     /// Cached images in memory. Free these if needed.
-    private var _leftImage: UIImage?, _rightImage: UIImage?, _stereogramImage: UIImage?, _thumbnailImage: UIImage?
+    private var _stereogramImage: UIImage?
+    private var _thumbnailImage:  UIImage?
     
     //MARK: Private methods
     
@@ -533,15 +538,11 @@ public class Stereogram: NSObject {
     /// :returns: The UIImage object on success or NSError on failure.
     private func loadImage(whichImage: WhichImage) -> ResultOf<UIImage> {
         
-        func loadData(url: NSURL, inout cachedImage: UIImage?) -> ResultOf<UIImage> {
-            if let ci = cachedImage {
-                return ResultOf(ci)
-            }
+        func loadData(url: NSURL) -> ResultOf<UIImage> {
             var error: NSError?
             if let
                 imageData = NSData(contentsOfURL:url, options:.allZeros, error:&error),
                 image = UIImage(data: imageData) {
-                    cachedImage = image
                     return ResultOf(image)
             } else {
                 return ResultOf.Error(error!)
@@ -550,9 +551,9 @@ public class Stereogram: NSObject {
         
         switch whichImage {
         case .Left:
-            return loadData(leftImageURL, &_leftImage)
+            return loadData(leftImageURL)
         case .Right:
-            return loadData(rightImageURL, &_rightImage)
+            return loadData(rightImageURL)
         }
     }
     
