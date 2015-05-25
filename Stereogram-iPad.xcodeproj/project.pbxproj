@@ -12,12 +12,17 @@
 		57503BB21A62D3A000648FA1 /* PhotoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BB11A62D3A000648FA1 /* PhotoViewController.swift */; };
 		57503BB71A62D3A000648FA1 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 57503BB61A62D3A000648FA1 /* Images.xcassets */; };
 		57503BBA1A62D3A000648FA1 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57503BB81A62D3A000648FA1 /* LaunchScreen.xib */; };
-		57503BC61A62D3A000648FA1 /* Stereogram_iPadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BC51A62D3A000648FA1 /* Stereogram_iPadTests.swift */; };
+		57503BC61A62D3A000648FA1 /* PhotoStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BC51A62D3A000648FA1 /* PhotoStoreTests.swift */; };
 		57503BD01A62D42E00648FA1 /* PhotoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BCF1A62D42E00648FA1 /* PhotoStore.swift */; };
 		57503BD21A62D48700648FA1 /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BD11A62D48700648FA1 /* Result.swift */; };
 		57503BD51A62EACD00648FA1 /* UIImage+Resize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BD41A62EACD00648FA1 /* UIImage+Resize.swift */; };
 		57503BD71A63001D00648FA1 /* UIImage+Alpha.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BD61A63001D00648FA1 /* UIImage+Alpha.swift */; };
 		57503BD91A630DF100648FA1 /* UIImage+RoundedCorner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57503BD81A630DF100648FA1 /* UIImage+RoundedCorner.swift */; };
+		575B15231B12311400C8A9EF /* UIAlertController+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575B15221B12311400C8A9EF /* UIAlertController+Extensions.swift */; };
+		575B15251B12D0D400C8A9EF /* NSURL+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575B15241B12D0D400C8A9EF /* NSURL+Extensions.swift */; };
+		575B15261B12D1FE00C8A9EF /* NSURL+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575B15241B12D0D400C8A9EF /* NSURL+Extensions.swift */; };
+		575CEF4C1AF150A5009816C3 /* StereogramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575CEF4B1AF150A5009816C3 /* StereogramTests.swift */; };
+		575CEF4E1AF15440009816C3 /* StereogramTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575CEF4D1AF1543F009816C3 /* StereogramTestCase.swift */; };
 		579DA0D31AE4159D0079DC8C /* Stereogram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579DA0D21AE4159D0079DC8C /* Stereogram.swift */; };
 		57A1E6761A67C20A00B97F60 /* CameraOverlayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E6751A67C20A00B97F60 /* CameraOverlayViewController.swift */; };
 		57A1E6781A67C2D500B97F60 /* ImageThumbnailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1E6771A67C2D500B97F60 /* ImageThumbnailCell.swift */; };
@@ -70,12 +75,16 @@
 		57503BB91A62D3A000648FA1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		57503BBF1A62D3A000648FA1 /* Stereogram-iPadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Stereogram-iPadTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		57503BC41A62D3A000648FA1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		57503BC51A62D3A000648FA1 /* Stereogram_iPadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stereogram_iPadTests.swift; sourceTree = "<group>"; };
+		57503BC51A62D3A000648FA1 /* PhotoStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStoreTests.swift; sourceTree = "<group>"; };
 		57503BCF1A62D42E00648FA1 /* PhotoStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoStore.swift; sourceTree = "<group>"; };
 		57503BD11A62D48700648FA1 /* Result.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Result.swift; sourceTree = "<group>"; };
 		57503BD41A62EACD00648FA1 /* UIImage+Resize.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+Resize.swift"; sourceTree = "<group>"; };
 		57503BD61A63001D00648FA1 /* UIImage+Alpha.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+Alpha.swift"; sourceTree = "<group>"; };
 		57503BD81A630DF100648FA1 /* UIImage+RoundedCorner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+RoundedCorner.swift"; sourceTree = "<group>"; };
+		575B15221B12311400C8A9EF /* UIAlertController+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIAlertController+Extensions.swift"; sourceTree = "<group>"; };
+		575B15241B12D0D400C8A9EF /* NSURL+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSURL+Extensions.swift"; sourceTree = "<group>"; };
+		575CEF4B1AF150A5009816C3 /* StereogramTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StereogramTests.swift; sourceTree = "<group>"; };
+		575CEF4D1AF1543F009816C3 /* StereogramTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StereogramTestCase.swift; sourceTree = "<group>"; };
 		579DA0D21AE4159D0079DC8C /* Stereogram.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stereogram.swift; sourceTree = "<group>"; };
 		57A1E6751A67C20A00B97F60 /* CameraOverlayViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraOverlayViewController.swift; sourceTree = "<group>"; };
 		57A1E6771A67C2D500B97F60 /* ImageThumbnailCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageThumbnailCell.swift; sourceTree = "<group>"; };
@@ -143,9 +152,11 @@
 				57A1E6811A6C7F0600B97F60 /* View */,
 				57A1E6881A6C8AA600B97F60 /* Controllers */,
 				57503BD11A62D48700648FA1 /* Result.swift */,
+				575B15241B12D0D400C8A9EF /* NSURL+Extensions.swift */,
 				57503BAF1A62D3A000648FA1 /* AppDelegate.swift */,
 				57E1F9E01AEFF2BC00CF92C0 /* NSFileManager+SwiftSupport.swift */,
 				57A1E67B1A69C84800B97F60 /* NSError+Alert.swift */,
+				575B15221B12311400C8A9EF /* UIAlertController+Extensions.swift */,
 				572A54FD1AE7FC97005B4375 /* UIImage+Representations.swift */,
 				57503BB61A62D3A000648FA1 /* Images.xcassets */,
 				57503BB81A62D3A000648FA1 /* LaunchScreen.xib */,
@@ -165,7 +176,9 @@
 		57503BC21A62D3A000648FA1 /* Stereogram-iPadTests */ = {
 			isa = PBXGroup;
 			children = (
-				57503BC51A62D3A000648FA1 /* Stereogram_iPadTests.swift */,
+				575CEF4D1AF1543F009816C3 /* StereogramTestCase.swift */,
+				575CEF4B1AF150A5009816C3 /* StereogramTests.swift */,
+				57503BC51A62D3A000648FA1 /* PhotoStoreTests.swift */,
 				57503BC31A62D3A000648FA1 /* Supporting Files */,
 			);
 			path = "Stereogram-iPadTests";
@@ -239,6 +252,7 @@
 				57503BA61A62D3A000648FA1 /* Sources */,
 				57503BA71A62D3A000648FA1 /* Frameworks */,
 				57503BA81A62D3A000648FA1 /* Resources */,
+				577A012D1B0FA04B000AAC9A /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -331,6 +345,22 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		577A012D1B0FA04B000AAC9A /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = /usr/local/bin/swiftlint;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		57503BA61A62D3A000648FA1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -338,6 +368,7 @@
 			files = (
 				57A1E68C1A6F3BCC00B97F60 /* ThumbnailCache.swift in Sources */,
 				57A1E6921A71713300B97F60 /* StereogramViewController.swift in Sources */,
+				575B15251B12D0D400C8A9EF /* NSURL+Extensions.swift in Sources */,
 				57503BB21A62D3A000648FA1 /* PhotoViewController.swift in Sources */,
 				579DA0D31AE4159D0079DC8C /* Stereogram.swift in Sources */,
 				57E1F9E11AEFF2BC00CF92C0 /* NSFileManager+SwiftSupport.swift in Sources */,
@@ -346,6 +377,7 @@
 				57B41CCB1A739ADD0002FB5E /* WelcomeViewController.swift in Sources */,
 				57A1E6761A67C20A00B97F60 /* CameraOverlayViewController.swift in Sources */,
 				57503BD21A62D48700648FA1 /* Result.swift in Sources */,
+				575B15231B12311400C8A9EF /* UIAlertController+Extensions.swift in Sources */,
 				57503BD91A630DF100648FA1 /* UIImage+RoundedCorner.swift in Sources */,
 				572A54FE1AE7FC97005B4375 /* UIImage+Representations.swift in Sources */,
 				57A1E67E1A69CA1500B97F60 /* FullImageViewController.swift in Sources */,
@@ -364,15 +396,18 @@
 			files = (
 				57E6510F1AEFDE1E00BA1360 /* UIImage+Representations.swift in Sources */,
 				57E6510E1AEFDE1500BA1360 /* UIImage+RoundedCorner.swift in Sources */,
+				575B15261B12D1FE00C8A9EF /* NSURL+Extensions.swift in Sources */,
 				57E6510B1AEFD10400BA1360 /* NSError+Alert.swift in Sources */,
 				57E6510D1AEFDE1100BA1360 /* UIImage+Alpha.swift in Sources */,
 				57E1F9E21AEFF42800CF92C0 /* NSFileManager+SwiftSupport.swift in Sources */,
 				57E6510A1AEFD0F200BA1360 /* Result.swift in Sources */,
 				57E651061AEFCF8F00BA1360 /* PhotoStore.swift in Sources */,
-				57503BC61A62D3A000648FA1 /* Stereogram_iPadTests.swift in Sources */,
+				57503BC61A62D3A000648FA1 /* PhotoStoreTests.swift in Sources */,
 				57E651071AEFD0E200BA1360 /* ThumbnailCache.swift in Sources */,
+				575CEF4C1AF150A5009816C3 /* StereogramTests.swift in Sources */,
 				57E6510C1AEFDE0D00BA1360 /* UIImage+Resize.swift in Sources */,
 				57E651081AEFD0E700BA1360 /* ImageManager.swift in Sources */,
+				575CEF4E1AF15440009816C3 /* StereogramTestCase.swift in Sources */,
 				57E651091AEFD0EA00BA1360 /* Stereogram.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

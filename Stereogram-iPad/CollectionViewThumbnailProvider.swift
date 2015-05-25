@@ -8,59 +8,82 @@
 
 import UIKit
 
-// TODO: Make this generic
+// Make this generic
 
-/// Connector that takes a thumbnail provider and implements a collection view delegate, serving data from the provider.
+/// Connector that takes a thumbnail provider and implements a collection view delegate
+/// serving data from the provider.
 
-class CollectionViewThumbnailProvider : NSObject, UICollectionViewDataSource, UICollectionViewDelegate {
-   
-    // MARK: Initialzers
-    
+class CollectionViewThumbnailProvider: NSObject, UICollectionViewDelegate {
+
+	// MARK: Private data
+
+	/// The photo store we are sourcing images from.
+	private let photoStore: PhotoStore
+
+	/// The collection view we are populating with images.
+	private var photoCollection: UICollectionView
+
+	/// Cell identifier for the collection view's cells.
+	private let imageThumbnailCellId = "ImageThumbnailCell"
+
+
+	// MARK: Initialzers
+
     /// Designated initializer.
     ///
     /// :param: photoStore       The photo store to search for images.
-    /// :param: photoCollection  The collection view to populate with thumbnails from the photo store.
+    /// :param: photoCollection  The collection to populate with thumbnails from the photo store.
 
     init(photoStore: PhotoStore, photoCollection: UICollectionView) {
-        self._photoStore = photoStore
-        self._photoCollection = photoCollection
+        self.photoStore = photoStore
+        self.photoCollection = photoCollection
         super.init()
-        photoCollection.registerClass(ImageThumbnailCell.self, forCellWithReuseIdentifier: _imageThumbnailCellId)
+        photoCollection.registerClass(    ImageThumbnailCell.self
+			, forCellWithReuseIdentifier: imageThumbnailCellId)
 
         // Tell the photo collection to come to us for data.
         photoCollection.dataSource = self
     }
-    
-    // MARK: - Collection View Data Source
-    
+}
+
+private func dequeueCellId(collectionView cv: UICollectionView
+	,                              cellId id: String
+	,                         indexPath path: NSIndexPath) -> ImageThumbnailCell {
+		if let c = cv.dequeueReusableCellWithReuseIdentifier(id
+			,                                  forIndexPath: path) as? ImageThumbnailCell {
+				return c
+		} else {
+			assert(false, "Collection view \(cv) cannot get a ThumbnailImageCell for ID \(id)")
+			return ImageThumbnailCell()
+		}
+}
+
+// MARK: - Collection View Data Source
+extension CollectionViewThumbnailProvider: UICollectionViewDataSource {
+
     func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
         return 1
     }
-    
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+
+    func collectionView(  collectionView: UICollectionView
+		, numberOfItemsInSection section: Int) -> Int {
         assert(section == 0, "data requested for section \(section), which is out of range.")
-        return _photoStore.count
-    }
-    
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(_imageThumbnailCellId, forIndexPath: indexPath) as! ImageThumbnailCell
-        switch _photoStore.stereogramAtIndex(indexPath.item).thumbnailImage() {
-        case .Success(let result):
-            cell.image = result.value
-        case .Error(let error):
-            NSLog("Error \(error) receiving stereogram image at index path \(indexPath) from \(_photoStore)")
-        }
-        return cell
+        return photoStore.count
     }
 
-    // MARK: Private data
-    
-    /// The photo store we are sourcing images from.
-    private let _photoStore: PhotoStore
-    
-    /// The collection view we are populating with images.
-    private var _photoCollection: UICollectionView
-    
-    /// Cell identifier for the collection view's cells.
-    private let _imageThumbnailCellId = "ImageThumbnailCell"
+	func collectionView(    collectionView: UICollectionView
+		, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+			let thumbCell = dequeueCellId(collectionView: collectionView
+				,                                 cellId: imageThumbnailCellId
+				,                              indexPath: indexPath)
+			switch photoStore.stereogramAtIndex(indexPath.item).thumbnailImage() {
+			case .Success(let result):
+				thumbCell.image = result.value
+			case .Error(let error):
+				NSLog("Error \(error) receiving stereogram image "
+					+ "at index path \(indexPath) from \(photoStore)")
+			}
+			return thumbCell
+	}
+
 }

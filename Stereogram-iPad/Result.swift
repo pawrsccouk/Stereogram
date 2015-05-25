@@ -28,7 +28,7 @@ public enum Result {
         case .Error: return false
         }
     }
-    
+
     // Returns the error if we were in an error state, or nil otherwise.
     var error: NSError? {
         switch self {
@@ -45,7 +45,7 @@ public enum Result {
         case .Error(let e): return .Error(e)
         }
     }
-    
+
     // As map(), but returns a value with no data, i.e. only success and fail options.
     func map0(fn: Void -> Result) -> Result {
         switch self {
@@ -53,7 +53,7 @@ public enum Result {
         case .Error(let e): return .Error(e)
         }
     }
-    
+
     // If an error was found, run the given handler, passing the error in.
     // Useful when we only want to handle errors, but no need to handle the success case.
     func onError(handler: (NSError) -> Void ) {
@@ -71,16 +71,16 @@ public enum Result {
 public enum ResultOf<T> {
     case Success(FailableValueWrapper<T>)
     case Error(NSError)  // We will substitute a default error if the one provided is nil.
-    
+
     // Initialise with the value directly, to hide the use of the wrapper.
     init(_ value: T) {
         self = .Success(FailableValueWrapper(value))
     }
-    
+
     init(_ error: NSError) {
         self = .Error(error)
     }
-    
+
     // True if the result was a success, false if it failed.
     var success: Bool {
         switch self {
@@ -88,7 +88,7 @@ public enum ResultOf<T> {
         case .Error: return false
         }
     }
-    
+
     // Returns the error if we were in an error state, or nil otherwise.
     var error: NSError? {
         switch self {
@@ -115,8 +115,8 @@ public enum ResultOf<T> {
         }
     }
 
-    // Boolean result: If successful it returns .Success(), 
-    // if it failed, return the error code. 
+    // Boolean result: If successful it returns .Success(),
+    // if it failed, return the error code.
     // Useful if we care that it succeeded, but don't need the returned value.
     public var result: Result {
         switch self {
@@ -126,8 +126,17 @@ public enum ResultOf<T> {
     }
 }
 
+/// Shortcut function to return a given error in the form of a ResultOf type.
+func returnError<T>(location: String, operation: String) -> ResultOf<T> {
+	let err = NSError.unknownErrorWithLocation(location, target: operation)
+	return .Error(err)
+}
 
-
+/// Shortcut function to return a given error in the form of a Result type.
+func returnError(location: String, operation: String) -> Result {
+	let err = NSError.unknownErrorWithLocation(location, target: operation)
+	return .Error(err)
+}
 
 // Takes a collection of objects and a function to call on each one of them.
 // Returns success only if all the function calls returned success.

@@ -12,14 +12,15 @@ import MobileCoreServices
 
 
 extension UIImage {
-    
+
     /// Return this image as an NSData object representing a GIF.
-    
-    var GIFData: NSData! {
+
+    var asGIFData: NSData! {
         let mutableData = NSMutableData()
-        let cgImage = CGImageDestinationCreateWithData(mutableData, kUTTypeGIF, self.images?.count ?? 1, nil)
-        if let allFrames = self.images {
-            for frame in allFrames as! [UIImage] {
+        let cgImage = CGImageDestinationCreateWithData(mutableData
+			, kUTTypeGIF, self.images?.count ?? 1, nil)
+        if let allFrames = self.images as? [UIImage] {
+            for frame in allFrames {
                 CGImageDestinationAddImage(cgImage, frame.CGImage, nil)
             }
         } else { // Only one image.
@@ -28,10 +29,10 @@ extension UIImage {
         CGImageDestinationFinalize(cgImage)
         return mutableData
     }
-    
+
     /// Return this image as an NSData object representing a JPEG.
-    
-    var JPEGData: NSData! {
+
+    var asJPEGData: NSData! {
         return UIImageJPEGRepresentation(self, 1.0)
     }
 
