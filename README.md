@@ -11,3 +11,6 @@ This application presents the user with a modified camera view including a cross
 
 ## Notes
 This version is written for the iPad in Swift. I have another version Stereogram-iPhone which is written for older iPhones in Objective-C. In future, I intend to make this branch universal, but at the moment I don’t have an iOS8-capable iPhone so I can’t convert it.
+
+## Acknowledgements
+The thumbnail code in UIImage-categories is created by Trevor Harmon on 8/5/09. His code is free for personal or commercial use, with or without modification. No warranty is expressed or implied.
